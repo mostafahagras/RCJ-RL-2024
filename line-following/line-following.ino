@@ -1,0 +1,65 @@
+// ALL VALUES ARE PLACEHOLDERS 
+#define BASE_SPEED 10
+#define HIGH_SPEED 15
+#define LOW_SPEED 5
+#define SPEED_CHANGE 2
+int sensorPins[5] = {1,2,3,4,5}; // left2 -- left1 -- middle -- right1 -- right2
+float weights[5] = {-0.3, -0.1, 0, 0.1, 0.3};
+#define LEFT_RED 1
+#define LEFT_GREEN 2
+#define RIGHT_RED 3
+#define RIGHT_GREEN 4
+
+void setup() {
+  pinMode(sensorPins[0], INPUT);
+  pinMode(sensorPins[1], INPUT);
+  pinMode(sensorPins[2], INPUT);
+  pinMode(sensorPins[3], INPUT);
+  pinMode(sensorPins[4], INPUT);
+
+  pinMode(LEFT_RED, INPUT);
+  pinMode(LEFT_GREEN, INPUT);
+  pinMode(RIGHT_RED, INPUT);
+  pinMode(RIGHT_GREEN, INPUT);
+}
+
+void loop() {
+  int sensorValues[5];
+  for(int i = 0; i < 5; i++) {
+    sensorValues[i] = digitalRead(sensorPins[i]);
+  }
+  float position = 0;
+  for(int i = 0; i < 5; i++) {
+    position += sensorValues[i] * weights[i];
+  }
+  int motorSpeed1 = BASE_SPEED + (position * SPEED_CHANGE );
+  int motorSpeed2 = BASE_SPEED - (position * SPEED_CHANGE );
+  
+  int sensorsValuesSum = 0;
+  for(int i = 0; i < 5; i++) {
+    sensorValues[i] = digitalRead(sensorPins[i]);
+    sensorsValuesSum += sensorValues[i];
+  }
+
+  if(sensorsValuesSum = 5) {
+    int leftRedValue = digitalRead(LEFT_RED);
+    int rightRedValue = digitalRead(RIGHT_RED);
+
+    if (leftRedValue == 1 || rightRedValue == 1) {
+      motorSpeed1 = 0;
+      motorSpeed2 = 0;
+    }
+  }
+  
+  if(sensorsValuesSum < 3) {
+    int leftGreenValue = digitalRead(LEFT_GREEN);
+    int rightGreenValue = digitalRead(RIGHT_GREEN);
+    if (leftGreenValue + rightGreenValue == 2) {
+      // rotate 180deg
+    } else if (leftGreenValue == 1 && rightGreenValue == 0) {
+      // rotate -90deg
+    } else if (leftGreenValue == 0 && rightGreenValue == 1) {
+      // rotate 90deg
+    }
+  }
+}
