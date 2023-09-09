@@ -5,6 +5,10 @@
 #define SPEED_CHANGE 200
 int sensorPins[5] = { 32, 34, 36, 38, 40 }; // left2 -- left1 -- middle -- right1 -- right2
 float weights[5] = { -1, -0.5, 0, 0.5, 1 };
+#define LEFT_MOTOR_DIRECTION 7
+#define RIGHT_MOTOR_DIRECTION 9
+#define LEFT_MOTOR_PWM 8
+#define RIGHT_MOTOR_PWM 10
 #define LEFT_RED 1
 #define LEFT_GREEN 2
 #define RIGHT_RED 3
