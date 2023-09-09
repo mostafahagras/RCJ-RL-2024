@@ -25,6 +25,11 @@ void setup() {
   pinMode(LEFT_GREEN, INPUT);
   pinMode(RIGHT_RED, INPUT);
   pinMode(RIGHT_GREEN, INPUT);
+
+  pinMode(LEFT_MOTOR_DIRECTION, OUTPUT);
+  pinMode(LEFT_MOTOR_PWM, OUTPUT);
+  pinMode(RIGHT_MOTOR_DIRECTION, OUTPUT);
+  pinMode(RIGHT_MOTOR_PWM, OUTPUT);
 }
 
 void loop() {
