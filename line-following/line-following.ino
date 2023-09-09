@@ -15,17 +15,18 @@ float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 #define RIGHT_GREEN 4
 
 void setup() {
+  /* Line following sensors */
   pinMode(sensorPins[0], INPUT);
   pinMode(sensorPins[1], INPUT);
   pinMode(sensorPins[2], INPUT);
   pinMode(sensorPins[3], INPUT);
   pinMode(sensorPins[4], INPUT);
-
-  pinMode(LEFT_RED, INPUT);
-  pinMode(LEFT_GREEN, INPUT);
-  pinMode(RIGHT_RED, INPUT);
-  pinMode(RIGHT_GREEN, INPUT);
-
+  /* Color sensors */
+  // pinMode(LEFT_RED, INPUT);
+  // pinMode(LEFT_GREEN, INPUT);
+  // pinMode(RIGHT_RED, INPUT);
+  // pinMode(RIGHT_GREEN, INPUT);
+  /* Motors */
   pinMode(LEFT_MOTOR_DIRECTION, OUTPUT);
   pinMode(LEFT_MOTOR_PWM, OUTPUT);
   pinMode(RIGHT_MOTOR_DIRECTION, OUTPUT);
