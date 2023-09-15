@@ -54,6 +54,9 @@ void loop() {
 
   digitalRight(LEFT_MOTOR_DIRECTION, leftMotorDirection);
   digitalRight(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
+
+  analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorDirection), HIGH_SPEED));
+  analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorDirection), HIGH_SPEED));
   // int sensorsValuesSum = 0;
   // for(int i = 0; i < 5; i++) {
   //   sensorValues[i] = digitalRead(sensorPins[i]);
