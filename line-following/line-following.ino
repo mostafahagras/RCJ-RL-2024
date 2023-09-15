@@ -52,6 +52,8 @@ void loop() {
   int leftMotorDirection = leftMotorSpeed > 0 ? LEFT_MOTOR_FRONT : LEFT_MOTOR_BACK;
   int rightMotorDirection = rightMotorSpeed > 0 ? RIGHT_MOTOR_FRONT : RIGHT_MOTOR_BACK;
 
+  digitalRight(LEFT_MOTOR_DIRECTION, leftMotorDirection);
+  digitalRight(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
   // int sensorsValuesSum = 0;
   // for(int i = 0; i < 5; i++) {
   //   sensorValues[i] = digitalRead(sensorPins[i]);
