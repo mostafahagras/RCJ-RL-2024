@@ -43,8 +43,8 @@ void loop() {
     position += sensorValues[i] * weights[i];
   }
   int leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE );
-  int motorSpeed2 = BASE_SPEED - (position * SPEED_CHANGE );
-  
+  int rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE );
+
   int sensorsValuesSum = 0;
   for(int i = 0; i < 5; i++) {
     sensorValues[i] = digitalRead(sensorPins[i]);
