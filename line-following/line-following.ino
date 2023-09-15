@@ -42,7 +42,7 @@ void loop() {
   for(int i = 0; i < 5; i++) {
     position += sensorValues[i] * weights[i];
   }
-  int motorSpeed1 = BASE_SPEED + (position * SPEED_CHANGE );
+  int leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE );
   int motorSpeed2 = BASE_SPEED - (position * SPEED_CHANGE );
   
   int sensorsValuesSum = 0;
