@@ -39,8 +39,8 @@ void setup() {
 
 int lastLeftMotorSpeed = BASE_SPEED;
 int lastRightMotorSpeed = BASE_SPEED;
-int lastLeftMotorDirection = 0;
-int lastRightMotorDirection = 1;
+int lastLeftMotorDirection = LEFT_MOTOR_FRONT;
+int lastRightMotorDirection = RIGHT_MOTOR_FRONT;
 int count = 0;
 
 void loop() {
