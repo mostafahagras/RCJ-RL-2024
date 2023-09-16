@@ -3,7 +3,7 @@
 #define HIGH_SPEED 254
 #define LOW_SPEED 50
 #define SPEED_CHANGE 400
-int sensorPins[5] = { 32, 34, 36, 38, 40 }; // left2 -- left1 -- middle -- right1 -- right2
+int sensorPins[5] = { 32, 34, 36, 38, 40 };  // left2 -- left1 -- middle -- right1 -- right2
 float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 #define LEFT_MOTOR_DIRECTION 7
 #define RIGHT_MOTOR_DIRECTION 9
@@ -43,6 +43,14 @@ int lastLeftMotorDirection = LEFT_MOTOR_FRONT;
 int lastRightMotorDirection = RIGHT_MOTOR_FRONT;
 int count = 0;
 
+void resetLastValues() {
+  lastLeftMotorSpeed = BASE_SPEED;
+  lastRightMotorSpeed = BASE_SPEED;
+  lastLeftMotorDirection = LEFT_MOTOR_FRONT;
+  lastRightMotorDirection = RIGHT_MOTOR_FRONT;
+  count = 0;
+}
+
 void loop() {
   int sensorValues[5];
   int sum = 0;
@@ -75,7 +83,7 @@ void loop() {
     lastMotorDirection1 = LEFT_MOTOR_FRONT;
     lastMotorDirection2 = RIGHT_MOTOR_FRONT;
     count = 0;
-  } else if(sum == 0 && count < 5) {
+  } else if (sum == 0 && count < 5) {
     count++;
   }
 
