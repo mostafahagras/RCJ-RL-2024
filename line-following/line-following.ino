@@ -81,6 +81,11 @@ void loop() {
     resetLastValues()
   } else if (sum == 0 && count < 5) {
     count++;
+  } else {
+    lastLeftMotorSpeed = leftMotorSpeed;
+    lastRightMotorSpeed = rightMotorSpeed;
+    lastLeftMotorDirection = leftMotorDirection;
+    lastRightMotorDirection = rightMotorDirection;
   }
 
   digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
