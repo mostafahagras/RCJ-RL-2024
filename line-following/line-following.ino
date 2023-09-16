@@ -78,7 +78,7 @@ void loop() {
     analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), HIGH_SPEED));
     analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorSpeed), HIGH_SPEED));
     delay(100);
-    resetLastValues()
+    resetLastValues();
   } else if (sum == 0 && count < 5) {
     count++;
   } else {
