@@ -78,11 +78,7 @@ void loop() {
     analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), HIGH_SPEED));
     analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorSpeed), HIGH_SPEED));
     delay(100);
-    lastMotorSpeed1 = BASE_SPEED;
-    lastMotorSpeed2 = BASE_SPEED;
-    lastMotorDirection1 = LEFT_MOTOR_FRONT;
-    lastMotorDirection2 = RIGHT_MOTOR_FRONT;
-    count = 0;
+    resetLastValues()
   } else if (sum == 0 && count < 5) {
     count++;
   }
