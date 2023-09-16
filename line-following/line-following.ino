@@ -52,8 +52,8 @@ void loop() {
   int leftMotorDirection = leftMotorSpeed > 0 ? LEFT_MOTOR_FRONT : LEFT_MOTOR_BACK;
   int rightMotorDirection = rightMotorSpeed > 0 ? RIGHT_MOTOR_FRONT : RIGHT_MOTOR_BACK;
 
-  digitalRight(LEFT_MOTOR_DIRECTION, leftMotorDirection);
-  digitalRight(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
+  digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
+  digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
 
   analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorDirection), HIGH_SPEED));
   analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorDirection), HIGH_SPEED));
