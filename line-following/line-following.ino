@@ -45,8 +45,10 @@ int count = 0;
 
 void loop() {
   int sensorValues[5];
+  int sum = 0;
   for(int i = 0; i < 5; i++) {
     sensorValues[i] = digitalRead(sensorPins[i]);
+    sum += sensorValues[i];
   }
   float position = 0;
   for(int i = 0; i < 5; i++) {
