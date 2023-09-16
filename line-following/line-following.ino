@@ -1,4 +1,4 @@
-// ALL VALUES ARE PLACEHOLDERS 
+// ALL VALUES ARE PLACEHOLDERS
 #define BASE_SPEED 100
 #define HIGH_SPEED 254
 #define LOW_SPEED 50
@@ -46,19 +46,36 @@ int count = 0;
 void loop() {
   int sensorValues[5];
   int sum = 0;
-  for(int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; i++) {
     sensorValues[i] = digitalRead(sensorPins[i]);
     sum += sensorValues[i];
   }
   float position = 0;
-  for(int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; i++) {
     position += sensorValues[i] * weights[i];
   }
-  int leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE );
-  int rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE );
+  int leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
+  int rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
 
   int leftMotorDirection = leftMotorSpeed > 0 ? LEFT_MOTOR_FRONT : LEFT_MOTOR_BACK;
   int rightMotorDirection = rightMotorSpeed > 0 ? RIGHT_MOTOR_FRONT : RIGHT_MOTOR_BACK;
+
+  if (sum == 0 && count == 5) {
+    leftMotorSpeed = lastLeftMotorSpeed;
+    rightMotorSpeed = lastRightMotorSpeed;
+    leftMotorDirection = lastLeftMotorDirection;
+    rightMotorDirection = lastRightMotorDirection;
+    digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
+    digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
+    analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), HIGH_SPEED));
+    analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorSpeed), HIGH_SPEED));
+    delay(100);
+    lastMotorSpeed1 = BASE_SPEED;
+    lastMotorSpeed2 = BASE_SPEED;
+    lastMotorDirection1 = LEFT_MOTOR_FRONT;
+    lastMotorDirection2 = RIGHT_MOTOR_FRONT;
+    count = 0;
+  }
 
   digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
   digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
@@ -80,7 +97,7 @@ void loop() {
   //     motorSpeed2 = 0;
   //   }
   // }
-  
+
   // if(sensorsValuesSum < 3) {
   //   int leftGreenValue = digitalRead(LEFT_GREEN);
   //   int rightGreenValue = digitalRead(RIGHT_GREEN);
