@@ -75,6 +75,8 @@ void loop() {
     lastMotorDirection1 = LEFT_MOTOR_FRONT;
     lastMotorDirection2 = RIGHT_MOTOR_FRONT;
     count = 0;
+  } else if(sum == 0 && count < 5) {
+    count++;
   }
 
   digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
