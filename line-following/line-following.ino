@@ -37,7 +37,7 @@ void setup() {
   pinMode(RIGHT_MOTOR_PWM, OUTPUT);
 }
 
-int lastMotorSpeed1 = BASE_SPEED;
+int lastLeftMotorSpeed = BASE_SPEED;
 int lastMotorSpeed2 = BASE_SPEED;
 int lastMotorDirection1 = 0;
 int lastMotorDirection2 = 1;
