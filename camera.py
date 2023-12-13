@@ -11,7 +11,7 @@ sensor.set_auto_gain(False)
 sensor.set_auto_whitebal(False)
 clock = time.clock()
 max_distance = 15
-area_threshold = 5000
+max_blob_area = 5000
 
 def distance(x1, y1, x2, y2):
     return math.sqrt(math.pow(x1-x2, 2) + math.pow(y1-y2, 2))
@@ -34,7 +34,7 @@ while True:
             d = distance(blob.cx(), blob.cy(), c.x(), c.y())
             rect = blob.rect()
             if(d < max_distance):
-                if(rect[2] * rect[3] < area_threshold):
+                if(rect[2] * rect[3] < max_blob_area):
                     isBlack = True
                     img.draw_circle(c.x(), c.y(), c.r())
         if(not isBlack):
