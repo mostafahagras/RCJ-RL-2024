@@ -18,7 +18,7 @@ def distance(x1, y1, x2, y2):
 
 while True:
     clock.tick()
-    img = sensor.snapshot().lens_corr(1.8).erode(2)
+    img = sensor.snapshot().lens_corr(1.8)
     blobs = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200)
     for c in img.find_circles(
         threshold=2500,
