@@ -36,7 +36,6 @@ while True:
             if(d < ditance_threshold):
                 if(rect[2] * rect[3] < area_threshold):
                     isBlack = True
-                    img.draw_cross(blob.cx(), blob.cy())
-
+                    img.draw_circle(c.x(), c.y(), c.r())
         if(not isBlack):
             img.draw_circle(c.x(), c.y(), c.r(), color=(255, 0, 255))
