@@ -12,6 +12,7 @@ sensor.set_auto_whitebal(False)
 clock = time.clock()
 max_distance = 15
 max_blob_area = 5000
+center = [80, 90]
 
 def distance(x1, y1, x2, y2):
     return math.sqrt(math.pow(x1-x2, 2) + math.pow(y1-y2, 2))
@@ -30,6 +31,17 @@ while True:
         r_step=2,
     ):
         isBlack = False
+        xOffset = center[0] - c.x()
+        yOffset = center[1] - c.y()
+        if(xOffset > -10 and xOffset < 10 and yOffset < 10):
+            print("Pick ball")
+        elif(xOffset > 10):
+            print("Turn left")
+        elif(xOffset < -10):
+            print("Turn right")
+        elif(yOffset > 10):
+            print("Go forward")
+#        print("x: ", xOffset,  " y: ", yOffset)
         for blob in blobs:
             d = distance(blob.cx(), blob.cy(), c.x(), c.y())
             rect = blob.rect()
@@ -39,3 +51,4 @@ while True:
                     img.draw_circle(c.x(), c.y(), c.r())
         if(not isBlack):
             img.draw_circle(c.x(), c.y(), c.r(), color=(255, 0, 255))
+#    print(clock.fps())
