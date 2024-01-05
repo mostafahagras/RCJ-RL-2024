@@ -3,7 +3,7 @@
 #define HIGH_SPEED 254
 #define LOW_SPEED 50
 #define SPEED_CHANGE 400
-int sensorPins[5] = { 32, 34, 36, 38, 40 };  // left2 -- left1 -- middle -- right1 -- right2
+int sensorPins[5] = { 45, 47, 49, 51, 53 };  // left2 -- left1 -- middle -- right1 -- right2
 float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 #define LEFT_MOTOR_DIRECTION 7
 #define RIGHT_MOTOR_DIRECTION 9
