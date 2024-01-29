@@ -44,13 +44,13 @@ void loop() {
 
 void initColorSensors() {
   for (int i = 0; i < 2; i++) {
-    Serial.println(i);
+    // Serial.println(i);
     chooseBus(i);
     if (tcs[i].begin()) {
-      Serial.print("Found sensor ");
-      Serial.println(i + 1);
+      // Serial.print("Found sensor ");
+      // Serial.println(i + 1);
     } else {
-      Serial.println("No Sensor Found");
+      // Serial.println("No Sensor Found");
       while (true)
         ;
     }
