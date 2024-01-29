@@ -3,7 +3,8 @@
 #define HIGH_SPEED 254
 #define LOW_SPEED 50
 #define SPEED_CHANGE 400
-int sensorPins[5] = { 45, 47, 49, 51, 53 };  // left2 -- left1 -- middle -- right1 -- right2
+// int sensorPins[5] = { 45, 47, 49, 51, 53 };  // left2 -- left1 -- middle -- right1 -- right2
+int sensorPins[5] { A0, A1, A2, A3, A4 };
 float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 #define LEFT_MOTOR_DIRECTION 12
 #define RIGHT_MOTOR_DIRECTION 10
@@ -19,7 +20,7 @@ float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 // #define RIGHT_GREEN 4
 
 unsigned long previousMillis = 0;
-unsigned long interval = 2000UL;
+unsigned long interval = 1000;
 
 void setup() {
   /* Line following sensors */
@@ -38,7 +39,7 @@ void setup() {
   pinMode(LEFT_MOTOR_PWM, OUTPUT);
   pinMode(RIGHT_MOTOR_DIRECTION, OUTPUT);
   pinMode(RIGHT_MOTOR_PWM, OUTPUT);
-  Serial.begin(9600);
+  // Serial.begin(9600);
 }
 
 int lastLeftMotorSpeed = BASE_SPEED;
@@ -54,40 +55,49 @@ void resetLastValues() {
   lastRightMotorDirection = RIGHT_MOTOR_FRONT;
   count = 0;
 }
+void stop(int ms) {
+  analogWrite(LEFT_MOTOR_PWM, 0);
+  analogWrite(RIGHT_MOTOR_PWM, 0);
+  delay(ms);
+}
+bool checkGreen() {
+  return false;
+}
+
+int reading(int analog) {
+  return analog > 90 ? 1 : 0;
+}
 
 void loop() {
   int sensorValues[5];
   int sum = 0;
   for (int i = 0; i < 5; i++) {
-    sensorValues[i] = digitalRead(sensorPins[i]);
-    sum += 1 - sensorValues[i];
+    sensorValues[i] = reading(analogRead(sensorPins[i]));
+    sum += sensorValues[i];
   }
   float position = 0;
   for (int i = 0; i < 5; i++) {
-    position += (1 - sensorValues[i]) * weights[i];
+    position +=  reading(analogRead(sensorPins[i])) * weights[i];
   }
-  Serial.print(sensorValues[0]);
-  Serial.print(sensorValues[1]);
-  Serial.print(sensorValues[2]);
-  Serial.print(sensorValues[3]);
-  Serial.print(sensorValues[4]);
-  Serial.print("\t");
 
   int leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
   int rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
 
   int leftMotorDirection = leftMotorSpeed > 0 ? LEFT_MOTOR_FRONT : LEFT_MOTOR_BACK;
   int rightMotorDirection = rightMotorSpeed > 0 ? RIGHT_MOTOR_FRONT : RIGHT_MOTOR_BACK;
-  Serial.print("Left Speed: ");
-  Serial.print(leftMotorSpeed);
-  Serial.print(", Direction: ");
-  Serial.print(leftMotorDirection);
-  Serial.print(", Right Speed: ");
-  Serial.print(rightMotorSpeed);
-  Serial.print(", Direction: ");
-  Serial.print(rightMotorDirection);
-  Serial.println();
-  if (sum == 0 && count == 5) {
+
+  if (
+    reading(analogRead(sensorPins[0])) && 
+    reading(analogRead(sensorPins[1])) && 
+    reading(analogRead(sensorPins[2])) && 
+    reading(analogRead(sensorPins[3])) && 
+    reading(analogRead(sensorPins[4]))
+  ) {
+    previousMillis = millis();
+    stop(0);
+    while(millis() - previousMillis < interval) {
+      if(checkGreen()) break;
+    }
     leftMotorSpeed = lastLeftMotorSpeed;
     rightMotorSpeed = lastRightMotorSpeed;
     leftMotorDirection = lastLeftMotorDirection;
@@ -96,71 +106,18 @@ void loop() {
     digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
     analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), HIGH_SPEED));
     analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorSpeed), HIGH_SPEED));
-    while (millis() - previousMillis > interval) {
-      previousMillis += interval;
-      for (int i = 0; i < 5; i++) {
-        sensorValues[i] = digitalRead(sensorPins[i]);
-        sum += 1 - sensorValues[i];
-      }
-      if (sum > 0) {
-        break;
-      }
-      digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
-      digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
-      analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), HIGH_SPEED));
-      analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorSpeed), HIGH_SPEED));
+    delay(250);
+  } else {
+    if(leftMotorSpeed != rightMotorSpeed || leftMotorDirection != rightMotorDirection) {
+      lastLeftMotorSpeed = rightMotorSpeed;
+      lastRightMotorSpeed = leftMotorSpeed;
+      lastLeftMotorDirection = rightMotorDirection;
+      lastRightMotorDirection = leftMotorDirection;
     }
-    resetLastValues();
-  } else if (sum == 0 && count < 5) {
-    count++;
-  }
-  // else if (sum >= 3) {
-  //   analogWrite(LEFT_MOTOR_PWM, 0);
-  //   analogWrite(RIGHT_MOTOR_PWM, 0);
-  //   delay(1000);
-  //   digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_FRONT);
-  //   digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_FRONT);
-  //   analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
-  //   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
-  //   delay(500);
-  // }
-  else {
-    lastLeftMotorSpeed = leftMotorSpeed;
-    lastRightMotorSpeed = rightMotorSpeed;
-    lastLeftMotorDirection = leftMotorDirection;
-    lastRightMotorDirection = rightMotorDirection;
   }
 
   digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
   digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
-
   analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), HIGH_SPEED));
   analogWrite(RIGHT_MOTOR_PWM, min(abs(rightMotorSpeed), HIGH_SPEED));
-  // int sensorsValuesSum = 0;
-  // for(int i = 0; i < 5; i++) {
-  //   sensorValues[i] = digitalRead(sensorPins[i]);
-  //   sensorsValuesSum += sensorValues[i];
-  // }
-
-  // if(sensorsValuesSum = 5) {
-  //   int leftRedValue = digitalRead(LEFT_RED);
-  //   int rightRedValue = digitalRead(RIGHT_RED);
-
-  //   if (leftRedValue == 1 || rightRedValue == 1) {
-  //     motorSpeed1 = 0;
-  //     motorSpeed2 = 0;
-  //   }
-  // }
-
-  // if(sensorsValuesSum < 3) {
-  //   int leftGreenValue = digitalRead(LEFT_GREEN);
-  //   int rightGreenValue = digitalRead(RIGHT_GREEN);
-  //   if (leftGreenValue + rightGreenValue == 2) {
-  //     // rotate 180deg
-  //   } else if (leftGreenValue == 1 && rightGreenValue == 0) {
-  //     // rotate -90deg
-  //   } else if (leftGreenValue == 0 && rightGreenValue == 1) {
-  //     // rotate 90deg
-  //   }
-  // }
 }

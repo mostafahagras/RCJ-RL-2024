@@ -2,7 +2,7 @@
 #define MAX_SPEED 254
 #define LOW_SPEED 50
 #define SPEED_CHANGE 400
-int sensorPins[5] = { 45, 47, 49, 51, 53 };  // left2 -- left1 -- middle -- right1 -- right2
+int sensorPins[5] = { A0, A1, A2, A3, A4 };  // left2 -- left1 -- middle -- right1 -- right2
 float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 #define LEFT_MOTOR_DIRECTION 12
 #define RIGHT_MOTOR_DIRECTION 10
@@ -27,71 +27,74 @@ void setup() {
   // Serial.begin(9600);
 }
 
+// char[6] lastCase = "00100";
+
+int reading(int analog) {
+  return analog > 90 ? 1 : 0;
+}
+
+
 void forward() {
   digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_FRONT);
   analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
   digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_FRONT);
   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
-  Serial.println("FORWARD");
+  // Serial.println("FORWARD");
 }
-void backward() {
-  digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_BACK);
-  analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
-  digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_BACK);
-  analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
-}
+
 void stop(int ms) {
   analogWrite(LEFT_MOTOR_PWM, 0);
   analogWrite(RIGHT_MOTOR_PWM, 0);
   delay(ms);
-  Serial.println("STOP");
+  // Serial.println("STOP");
 }
 void forwardFor(int ms) {
   forward();
   delay(ms);
   stop(ms);
 }
-void backwardFor(int ms) {
-  backward();
-  delay(ms);
-  stop(ms);
-}
+// void backwardFor(int ms) {
+//   backward();
+//   delay(ms);
+//   stop(ms);
+// }
 void weakRight() {
   digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_BACK);
   analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
   digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_FRONT);
   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
-  Serial.println("WEAK RIGHT");
+  // Serial.println("WEAK RIGHT");
 }
 void weakLeft() {
   digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_FRONT);
   analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
   digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_BACK);
   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
-  Serial.println("WEAK LEFT");
+  // Serial.println("WEAK LEFT");
 }
+
 void strongRight() {
-  digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_BACK);
-  analogWrite(LEFT_MOTOR_PWM, MAX_SPEED);
-  digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_FRONT);
-  analogWrite(RIGHT_MOTOR_PWM, MAX_SPEED);
-  Serial.println("STRONG RIGHT");
+  // forwardFor(200);
+  while(!(!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4])))) {
+    digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_FRONT);
+    analogWrite(LEFT_MOTOR_PWM, 150);
+    digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_BACK);
+    analogWrite(RIGHT_MOTOR_PWM, 150);
+  }
+  // Serial.println("STRONG RIGHT");
 }
 void strongLeft() {
-  digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_FRONT);
-  analogWrite(LEFT_MOTOR_PWM, MAX_SPEED);
-  digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_BACK);
-  analogWrite(RIGHT_MOTOR_PWM, MAX_SPEED);
-  Serial.println("STRONG LEFT");
+  // forwardFor(200);
+  while(!(!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4])))) {
+    digitalWrite(LEFT_MOTOR_DIRECTION, LEFT_MOTOR_BACK);
+    analogWrite(LEFT_MOTOR_PWM, 150);
+    digitalWrite(RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_FRONT);
+    analogWrite(RIGHT_MOTOR_PWM, 150);
+  }
+  // Serial.println("STRONG LEFT");
 }
 
 void loop() {
-  int sensorValues[5];
-  int sum = 0;
-  for (int i = 0; i < 5; i++) {
-    sensorValues[i] = digitalRead(sensorPins[i]);
-    sum += 1 - sensorValues[i];
-  }
   // 0 white 1 black
   /* COVERED CASES 31
     FORWARD:
@@ -130,60 +133,89 @@ void loop() {
       01001
       10011
   */
-  // forward();
-  if (sum == 0) {  // 00000 || 11111
+  if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 00000 || 11111
+    // if(//lastCase != "00000" &&) {
+    // }
     forward();
-  } else if (sum == 5) {
-    stop(1000);
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 00100
+    //lastCase = "00000";
+  } else if (reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {
     forward();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 01110
+    //lastCase = "11111";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 00100
     forward();
-  } else if (digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 10101
+    //lastCase = "00100";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 01110
     forward();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 01010
+    //lastCase = "01110";
+  } else if (reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 10101
     forward();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 01000
-    weakLeft();
-  } else if (digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 10000
+    //lastCase = "10101";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 01010
+    forward();
+    //lastCase = "01010";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 01000
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 11000
+    //lastCase = "01000";
+  } else if (reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 10000
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 11100
+    //lastCase = "10000";
+  } else if (reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 11000
     strongLeft();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 01100
+    //lastCase = "11000";
+  } else if (reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 11100
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 10100
+    //lastCase = "11100";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 01100
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 10110
+    //lastCase = "01100";
+  } else if (reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 10100
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 11010
+    //lastCase = "10100";
+  } else if (reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 10110
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 11110
+    //lastCase = "10110";
+  } else if (reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 11010
     strongLeft();
-  } else if (digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 11101
+    //lastCase = "11010";
+  } else if (reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 11110
     strongLeft();
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {
-    weakRight();
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 00001
+    //lastCase = "11110";
+  } else if (reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 11101
+    strongLeft();
+    //lastCase = "11101";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) { // 00010
     strongRight();
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 00011
+    //lastCase = "00010";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 00001
     strongRight();
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 00111
+    //lastCase = "00001";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 00011
     strongRight();
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])) {  // 00110
-    weakRight();
-  } else if (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 00101
+    //lastCase = "00011";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 00111
     strongRight();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 01101
+    //lastCase = "00111";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {  // 00110
     strongRight();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 01011
+    //lastCase = "00110";
+  } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 00101
     strongRight();
-  } else if (!digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  //  01111
+    //lastCase = "00101";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 01101
     strongRight();
-  } else if (digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && digitalRead(sensorPins[2]) && digitalRead(sensorPins[3]) && digitalRead(sensorPins[4])) {  // 10111
+    //lastCase = "01101";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && !reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 01011
     strongRight();
+    //lastCase = "01011";
+  } else if (!reading(analogRead(sensorPins[0])) && reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  //  01111
+    strongRight();
+    //lastCase = "01111";
+  } else if (reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && reading(analogRead(sensorPins[3])) && reading(analogRead(sensorPins[4]))) {  // 10111
+    strongRight();
+    //lastCase = "10111";
   } else {
+    //lastCase = "00100";
     // stop(1000);
+    forward();
   }
 }
