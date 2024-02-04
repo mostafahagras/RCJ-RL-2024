@@ -25,6 +25,7 @@ void setup() {
 void loop() {
   int SensorOneReading = readColors(0);
   int SensorTwoReading = readColors(1);
+  // Serial.println();
   if (SensorOneReading == RED && SensorTwoReading == RED) {
     Serial.write(BOTH_RED);
   } else if (SensorOneReading == GREEN && SensorTwoReading == GREEN) {
@@ -61,9 +62,18 @@ int readColors(byte sensorNum) {
   chooseBus(sensorNum);
   float r, g, b;
   tcs[sensorNum].getRGB(&r, &g, &b);
-  if (g > 105 && r < 90) {
+  // Serial.print(sensorNum);
+  // Serial.print(": ");
+  // Serial.print(r);
+  // Serial.print("\t");
+  // Serial.print(g);
+  // Serial.print("\t");
+  // Serial.print(b);
+  // Serial.print("\t");
+  // Serial.println();
+  if (g - r > 25 && g - b > 25 ) {
     return GREEN;
-  } else if (g < 100 && r > 100) {
+  } else if (r - g > 40 && r - b > 40) {
     return RED;
   } else {
     return NONE;
