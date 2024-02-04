@@ -7,7 +7,7 @@
 #define P2 A2
 #define P3 A3
 #define P4 A4
-// #define P5 A5
+#define P5 23
 // float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 
 void setup() {
@@ -26,10 +26,6 @@ int reading(int analog) {
 }
 
 void loop() {
-  // int sensorValues[6];
-  // for (int i = 0; i < 7; i++) {
-  //   sensorValues[i] = analogRead();
-  // }
   Serial.print(reading(analogRead(P0)));
   Serial.print("\t");
   Serial.print(reading(analogRead(P1)));
@@ -39,8 +35,8 @@ void loop() {
   Serial.print(reading(analogRead(P3)));
   Serial.print("\t");
   Serial.print(reading(analogRead(P4)));
-  // Serial.print("\t");
-  // Serial.print(analogRead(P5));
+  Serial.print("\t\t\t");
+  Serial.print(digitalRead(P5));
   // Serial.print("\t");
   // Serial.print(sensorValues[6);
   Serial.println();
