@@ -43,6 +43,17 @@ while True:
         for blob in blobs:
             if(blob.rect()[2]/blob.rect()[3]>3):
                 if blob.elongation() > 0.5:
+                    if(search):
+                        xOffset = center[0] - c.x()
+                        yOffset = center[1] - c.y()
+                        if(xOffset > -10 and xOffset < 10 and yOffset < 10):
+                            uart.write("P")
+                        elif(xOffset > 10):
+                            uart.write("L")
+                        elif(xOffset < -10):
+                            uart.write("R")
+                        elif(yOffset > 10):
+                            uart.write("F")
                     if(state != 5):
                         img.draw_edges(blob.min_corners(), color=(255, 0, 0))
                         img.draw_line(blob.major_axis_line(), color=(255, 0, 0))
@@ -95,3 +106,4 @@ while True:
                     uart.write("F")
         if(not foundAnyBall):
             if(not search): search = 1
+
