@@ -47,7 +47,7 @@ while True:
                         xOffset = center[0] - c.x()
                         yOffset = center[1] - c.y()
                         if(xOffset > -10 and xOffset < 10 and yOffset < 10):
-                            uart.write("P")
+                            uart.write("R")
                         elif(xOffset > 10):
                             uart.write("L")
                         elif(xOffset < -10):
