@@ -5,7 +5,8 @@ import pyb
 from machine import UART
 
 state = 0
-search = 2
+search = 1
+changing_search = False
 uart = UART(3, 9600)
 uart.init(9600)
 black_thresholds = [(0, 20, -10, 10, -10, 10), (1, 6, -15, 12, -13, 16)] # Black
@@ -15,9 +16,6 @@ triangles_thresholds = [
 ]
 red_threshold = (0, 50, 75, 17, -30, 47)#(0, 20, 5, 50, 5, 50)
 green_threshold = (10, 30, -50, 0, 5, 30)
-#red_led = pyb.LED(1)
-#red_led.on()
-#blue_led = pyb.LED(3)
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QQVGA)
@@ -39,21 +37,33 @@ while True:
     if(state % 2 or search):
         if(state == 5 or search == 2): threshold = red_threshold
         else: threshold = green_threshold
+        if(changing_search):
+            uart.write("R")
+            if(search == 2):
+                threshold = green_threshold
+                search = 1
+            else:
+                threshold = red_threshold
+                search = 2
         blobs = img.find_blobs([threshold], pixels_threshold=100, area_threshold=100)
+        if(len(blobs) == 0): changing_search = True
+        else: changing_search = False
         for blob in blobs:
             if(blob.rect()[2]/blob.rect()[3]>3):
                 if blob.elongation() > 0.5:
                     if(search):
-                        xOffset = center[0] - c.x()
-                        yOffset = center[1] - c.y()
-                        if(xOffset > -10 and xOffset < 10 and yOffset < 10):
+                        xOffset = blob.rect()[0] - 80
+                        yOffset = blob.rect()[1] - 40
+#                        print(blob.cx(), ", ", blob.cy())
+                        if(blob.cy() > 25):
                             uart.write("R")
-                        elif(xOffset > 10):
-                            uart.write("L")
-                        elif(xOffset < -10):
-                            uart.write("R")
-                        elif(yOffset > 10):
+                        elif(blob.cx() < 100 and blob.cx() > 60):
                             uart.write("F")
+                        elif(blob.cx() < 60):
+                            uart.write("L")
+                        elif(blob.cx() > 100):
+                            uart.write("R")
+
                     if(state != 5):
                         img.draw_edges(blob.min_corners(), color=(255, 0, 0))
                         img.draw_line(blob.major_axis_line(), color=(255, 0, 0))
@@ -62,7 +72,7 @@ while True:
                         img.draw_edges(blob.min_corners(), color=(0, 255, 0))
                         img.draw_line(blob.major_axis_line(), color=(0, 255, 0))
                         img.draw_line(blob.minor_axis_line(), color=(0, 255, 0))
-    else:
+    if(state % 2 == 0):
         blobs = img.find_blobs(black_thresholds, pixels_threshold=100, area_threshold=100)
         circles = img.find_circles(
            threshold=2500,
@@ -86,23 +96,31 @@ while True:
                         isBlack = True
             if(not isBlack and state < 4):
                 foundAnyBall = True
-                if(xOffset > -10 and xOffset < 10 and yOffset < 10):
+                search = 0
+                changing_search = False
+#                print(xOffset, ", ", yOffset)
+                if(xOffset > -15 and xOffset < 15 and yOffset < 45):
                     uart.write("P")
-                elif(xOffset > 10):
+#                    print("P")
+                elif(xOffset > 15):
                     uart.write("L")
-                elif(xOffset < -10):
+                elif(xOffset < -15):
                     uart.write("R")
-                elif(yOffset > 10):
+                elif(yOffset > 45):
                     uart.write("F")
-            if(isBlack and state == 4):
+            if(isBlack):# and state == 4):
                 foundAnyBall = True
-                if(xOffset > -10 and xOffset < 10 and yOffset < 10):
+                search = 0
+                changing_search = False
+#                print(xOffset, ", ", yOffset)
+                if(xOffset > -15 and xOffset < 15 and yOffset < 45):
                     uart.write("P")
-                elif(xOffset > 10):
+#                    print("P")
+                elif(xOffset > 15):
                     uart.write("L")
-                elif(xOffset < -10):
+                elif(xOffset < -15):
                     uart.write("R")
-                elif(yOffset > 10):
+                elif(yOffset > 45):
                     uart.write("F")
         if(not foundAnyBall):
             if(not search): search = 1
