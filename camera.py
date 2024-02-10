@@ -143,11 +143,11 @@ while True:
                 r_min=6,
                 r_max=15,
                 r_step=2,
-        )
+            )
         foundAnyBall = False
         if(circles):
             c = max(circles, key=lambda b: b.r())
-            print(c.r())
+            print(c.y()/c.r())
             isBlack = False
             xOffset = center[0] - c.x()
             yOffset = center[1] - c.y()
