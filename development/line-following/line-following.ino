@@ -31,12 +31,10 @@ Adafruit_TCS34725 tcs[] = {
 unsigned long previousMillis = 0;
 unsigned long deadEndPrevMillis = 0;
 unsigned long greenPrevMillis = 0;
-unsigned long lastBallPickedMillis = 0;
 int whiteCounter = 0;
 bool inEvacuation = false;
 Servo arm, hand;
 char message[2];
-int roomState = 0;
 bool dropped = true;
 
 void setup() {
@@ -294,7 +292,6 @@ void loop() {
       // arm.write(135);
       // delay(100);
       // arm.write(90);
-      // Serial3.write(roomState++);
     } else if (message[0] == 66) {  // BACKWARD
                                     // Serial.println("B");
       digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
