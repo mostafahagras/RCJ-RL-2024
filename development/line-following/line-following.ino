@@ -80,7 +80,7 @@ int readColors(byte sensorNum) {
   tcs[sensorNum].getRGB(&r, &g, &b);
   if (g - r > 20 && g - b > 20) {
     return GREEN;
-  } else if (r - g > 30 && r - b > 30) {
+  } else if (r - g > 20 && r - b > 20) {
     return RED;
   } else {
     return NONE;
@@ -176,6 +176,21 @@ int reading(int analog) {
   return analog > 150 ? 1 : 0;
 }
 
+// int reading(uint8_t pin) {
+//   int analog = analogRead(pin)
+//   if(pin == A0) {
+//     return analog > 150 ? 1 : 0;
+//   } else if(pin == A1) {
+//     return analog > 150 ? 1 : 0;
+//   } else if(pin == A2) {
+//     return analog > 150 ? 1 : 0;
+//   } else if(pin == A3) {
+//     return analog > 150 ? 1 : 0;
+//   } else if(pin == A4) {
+//     return analog > 150 ? 1 : 0;
+//   }
+// }
+
 void obstacle() {
   if (!digitalRead(OBSTACLE)) {
     digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
@@ -201,7 +216,7 @@ void obstacle() {
 }
 bool firstEvacuationIteration = true;
 void loop() {
-  if (inEvacuation||true) {
+  if (inEvacuation) {
     Serial3.readBytes(message, 1);
     // Serial.print(message);
     if (message[0] == 70) {  // FORWARD
