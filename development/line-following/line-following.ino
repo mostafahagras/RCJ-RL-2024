@@ -6,11 +6,14 @@
 #define GREEN 1
 #define RED 2
 #define BASE_SPEED 60
+#define RAMP_SPEED 150
 #define MAX_SPEED 254
 #define SPEED_CHANGE 250
 int sensorPins[5]{ A0, A1, A2, A3, A4 };
 #define OBSTACLE 22
-#define OBSTACLE_2 23
+#define LEFT_OBSTACLE 23
+#define RIGHT_OBSTACLE 52
+#define TILT 53
 float weights[5] = { -0.5, -0.5, 0, 0.5, 0.5 };
 #define LEFT_MOTOR_DIRECTION 12
 #define RIGHT_MOTOR_DIRECTION 10
@@ -44,7 +47,8 @@ void setup() {
   pinMode(sensorPins[3], INPUT);
   pinMode(sensorPins[4], INPUT);
   pinMode(OBSTACLE, INPUT);
-  pinMode(OBSTACLE_2, INPUT);
+  pinMode(LEFT_OBSTACLE, INPUT);
+  pinMode(RIGHT_OBSTACLE, INPUT);
   /* Motors */
   pinMode(LEFT_MOTOR_DIRECTION, OUTPUT);
   pinMode(LEFT_MOTOR_PWM, OUTPUT);
@@ -54,7 +58,7 @@ void setup() {
   arm.attach(7);
   hand.attach(8);
   Serial3.begin(9600);
-  Serial.begin(9600);
+  // Serial.begin(9600);
 }
 
 void initColorSensors() {
@@ -94,6 +98,19 @@ void forward() {
   digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
   analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
+}
+
+void highSpeedForward() {
+  digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
+  digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
+  analogWrite(LEFT_MOTOR_PWM, RAMP_SPEED);
+  analogWrite(RIGHT_MOTOR_PWM, RAMP_SPEED);
+}
+
+void checkTilt() {
+  while (!digitalRead(TILT)) {
+    highSpeedForward();
+  }
 }
 
 void right() {
@@ -184,25 +201,24 @@ void obstacle() {
 }
 bool firstEvacuationIteration = true;
 void loop() {
-  if (inEvacuation) {
+  if (inEvacuation||true) {
     Serial3.readBytes(message, 1);
-    Serial.print(message);
-    // if(firstEvacuationIteration) {
-
-    // firstEvacuationIteration = false;
-    // }
+    // Serial.print(message);
     if (message[0] == 70) {  // FORWARD
+      // Serial.println("F");
       digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
       analogWrite(LEFT_MOTOR_PWM, 40);
       digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
       analogWrite(RIGHT_MOTOR_PWM, 40);
     } else if (message[0] == 82) {  // RIGHT
+      // Serial.println("R");
       digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
       analogWrite(LEFT_MOTOR_PWM, 80);
       digitalWrite(RIGHT_MOTOR_DIRECTION, BACK);
       analogWrite(RIGHT_MOTOR_PWM, 80);
       // delay(100);
     } else if (message[0] == 76) {  // LEFT
+      // Serial.println("L");
       digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
       analogWrite(LEFT_MOTOR_PWM, 80);
       digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
@@ -210,7 +226,7 @@ void loop() {
       // delay(100);
     } else if (message[0] == 80) {  // PICK
       if (dropped) {
-        // Serial3.write(roomState++);
+        // Serial.println("P");
         digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
         digitalWrite(RIGHT_MOTOR_DIRECTION, BACK);
         analogWrite(LEFT_MOTOR_PWM, 40);
@@ -237,6 +253,7 @@ void loop() {
         dropped = false;
       }
     } else if (message[0] == 68) {  // DROP
+      // Serial.println("D");
       digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
       digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
       analogWrite(LEFT_MOTOR_PWM, 40);
@@ -263,14 +280,21 @@ void loop() {
       // delay(100);
       // arm.write(90);
       // Serial3.write(roomState++);
-    } else if(message[0] == 66) { // BACKWARD
+    } else if (message[0] == 66) {  // BACKWARD
+                                    // Serial.println("B");
       digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
       analogWrite(LEFT_MOTOR_PWM, 40);
       digitalWrite(RIGHT_MOTOR_DIRECTION, BACK);
       analogWrite(RIGHT_MOTOR_PWM, 40);
     }
+     else {
+
+      // Serial.println(message);
+    //   stop(0);
+    }
   } else {
     obstacle();
+    checkTilt();
     float position = 0;
     for (int i = 0; i < 5; i++) {
       position += reading(analogRead(sensorPins[i])) * weights[i];
@@ -308,7 +332,6 @@ void loop() {
         forward();
         delay(100);
       } else {
-
         if (!leftGreen && !rightGreen) {
           forward();
           delay(100);
@@ -382,12 +405,11 @@ void loop() {
     }
     if (!(reading(analogRead(sensorPins[0])) || reading(analogRead(sensorPins[1])) || reading(analogRead(sensorPins[2])) || reading(analogRead(sensorPins[3])) || reading(analogRead(sensorPins[4])))) {
       whiteCounter++;
-      obstacle();
       char result = checkRed();
       if (result == 81 || result == 82 || result == 83) {
         stop(6000);
       } else {
-        if (!digitalRead(OBSTACLE_2) && whiteCounter >= 50) {
+        if ((digitalRead(LEFT_OBSTACLE) + digitalRead(RIGHT_OBSTACLE) == 1) && whiteCounter >= 50) {
           inEvacuation = true;
           digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
           digitalWrite(RIGHT_MOTOR_DIRECTION, BACK);
