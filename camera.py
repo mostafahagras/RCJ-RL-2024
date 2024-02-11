@@ -5,10 +5,9 @@ from machine import UART
 
 state = 0
 search = 0
-changing_search = False
 uart = UART(3, 9600)
 uart.init(9600)
-black_thresholds = [(0, 20, -10, 10, -10, 10), (1, 6, -15, 12, -13, 16)] # Black
+black_thresholds = [(0, 20, -10, 10, -10, 10), (1, 6, -15, 12, -13, 16)]
 red_threshold = [(0, 20, 5, 50, 5, 50), (0, 50, 75, 17, -30, 47)]
 green_threshold = [(10, 30, -50, 0, 5, 30)]#[(29, 67, -128, -9, -128, 127),(10, 30, -50, 0, 5, 30)]
 sensor.reset()
@@ -22,6 +21,8 @@ max_distance = 15
 max_blob_area = 5000
 center = [80, 40]
 last_case = None
+rotations = ["R", "R", "L", "L"]
+rotation = 3
 
 def validCircle(blob):
     if(blob.rect()[2]/blob.rect()[3] < 1.2 and blob.rect()[2]/blob.rect()[3] > 0.8): return True
@@ -61,11 +62,12 @@ def goToTriangle(threshold):
             else:
                 uart.write("B")
                 time.sleep_ms(1000)
-                uart.write("R")
+                nextRotation = rotations[(rotation+1)%4]
+                uart.write(nextRotation)
                 time.sleep_ms(3000)
                 if(search == 2): search = 1
                 else: search = 2
-                print("R")
+                print(nextRotation)
         elif(blob.cx() < 100 and blob.cx() > 60):
             uart.write("F")
             print("F")
@@ -81,7 +83,6 @@ while True:
     print("State: ", state)
     img = sensor.snapshot().lens_corr(1.8).crop(roi=(0, 35, 160, 80))
 #        if(changing_search):
-#            changing_search = False
 #            uart.write("R")
 #            if(search == 2):
 #                threshold = green_threshold
@@ -94,7 +95,6 @@ while True:
 #        if(len(blobs) == 0):
 #            uart.write("R")
 #        else:
-#            changing_search = False
 #            blob = max(blobs, key=lambda b: b.rect()[2] * b.rect()[3])
 #            xOffset = blob.rect()[0] - 80
 #            yOffset = blob.rect()[1] - 40
@@ -106,7 +106,6 @@ while True:
 #                    elif(state == 3): state = 4
 #                    elif(state == 5): state = 6
 #                    print("D")
-#                    changing_search = True
 #                else:
 #                    uart.write("R")
 #                    print("R")
@@ -214,14 +213,11 @@ while True:
                     uart.write(last_case[0])
                     foundAnyBall = True
                     print("last case" , last_case[0])
-
-    #                    print("R")
 #                if(isBlack and state == 4):
 #    #                print(xOffset, " , " , yOffset)
 #                    img.draw_circle(c.x(), c.y(), c.r(), (255,0,255))
 #                    foundAnyBall = True
 #                    search = 0
-#                    changing_search = False
 #                    if(xOffset > -15 and xOffset < 15 and yOffset < 45 and yOffset > 40):
 #                        uart.write("P")
 ##                        if(state == 0): state = 1
