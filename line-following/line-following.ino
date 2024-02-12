@@ -11,7 +11,7 @@
 #define SPEED_CHANGE 250
 int sensorPins[5]{ A0, A1, A2, A3, A4 };
 #define OBSTACLE 22
-#define LEFT_OBSTACLE 23
+#define LEFT_OBSTACLE 39
 #define RIGHT_OBSTACLE 52
 #define TILT 53
 float weights[5] = { -0.5, -0.5, 0, 0.5, 0.5 };
@@ -171,7 +171,7 @@ char checkRed() {
 }
 
 int reading(int analog) {
-  return analog > 150 ? 1 : 0;
+  return analog > 250 ? 1 : 0;
 }
 
 // int reading(uint8_t pin) {
@@ -213,10 +213,11 @@ void obstacle() {
   }
 }
 bool firstEvacuationIteration = true;
+
 void loop() {
   if (inEvacuation) {
     Serial3.readBytes(message, 1);
-    // Serial.print(message);
+    Serial.print(message[0]);
     if (message[0] == 70) {  // FORWARD
       // Serial.println("F");
       digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
@@ -310,6 +311,7 @@ void loop() {
     for (int i = 0; i < 5; i++) {
       position += reading(analogRead(sensorPins[i])) * weights[i];
     }
+    // Serial.println(position);
     int leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
     int rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
     int leftMotorDirection = leftMotorSpeed > 0 ? FRONT : BACK;
@@ -321,7 +323,7 @@ void loop() {
       bool leftGreen = false;
       bool rightGreen = false;
       previousMillis = millis();
-      while (millis() - previousMillis < interval) {
+      while (millis() - previousMillis < 500) {
         char result = checkGreen();
         if (result == 71) {
           leftGreen = true;
@@ -348,12 +350,15 @@ void loop() {
           delay(100);
         }
       }
-    } else if ((reading(analogRead(sensorPins[0])) || reading(analogRead(sensorPins[1]))) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {
+    } 
+    else if ((reading(analogRead(sensorPins[0])) || reading(analogRead(sensorPins[1]))) && reading(analogRead(sensorPins[2])) && !reading(analogRead(sensorPins[3])) && !reading(analogRead(sensorPins[4]))) {
+      forward();
+      delay(50);
       stop(0);
       bool leftGreen = false;
       bool rightGreen = false;
       previousMillis = millis();
-      while (millis() - previousMillis < interval) {
+      while (millis() - previousMillis < 500) {
         char result = checkGreen();
         if (result == 71) {
           leftGreen = true;
@@ -380,12 +385,15 @@ void loop() {
           delay(100);
         }
       }
-    } else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && (reading(analogRead(sensorPins[3])) || reading(analogRead(sensorPins[4])))) {
+    } 
+    else if (!reading(analogRead(sensorPins[0])) && !reading(analogRead(sensorPins[1])) && reading(analogRead(sensorPins[2])) && (reading(analogRead(sensorPins[3])) || reading(analogRead(sensorPins[4])))) {
+      forward();
+      delay(50);
       stop(0);
       bool leftGreen = false;
       bool rightGreen = false;
       previousMillis = millis();
-      while (millis() - previousMillis < interval) {
+      while (millis() - previousMillis < 500) {
         char result = checkGreen();
         if (result == 71) {
           leftGreen = true;
@@ -408,7 +416,8 @@ void loop() {
           delay(100);
         }
       }
-    } else {
+    }
+     else {
       digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
       digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);
       analogWrite(LEFT_MOTOR_PWM, min(abs(leftMotorSpeed), MAX_SPEED));
