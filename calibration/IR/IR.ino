@@ -8,6 +8,10 @@
 #define P3 A3
 #define P4 A4
 #define P5 52
+#define OBSTACLE 22
+#define LEFT_OBSTACLE 39
+#define RIGHT_OBSTACLE 52
+#define TILT 53
 // float weights[5] = { -1, -0.5, 0, 0.5, 1 };
 
 void setup() {
@@ -36,7 +40,14 @@ void loop() {
   Serial.print("\t");
   Serial.print(reading(analogRead(P4)));
   Serial.print("\t\t\t");
-  Serial.print(digitalRead(P5));
+  // Serial.print(digitalRead(P5));
+  Serial.print(digitalRead(LEFT_OBSTACLE));
+  Serial.print("\t");
+  Serial.print(digitalRead(OBSTACLE));
+  Serial.print("\t");
+  Serial.print(digitalRead(RIGHT_OBSTACLE));
+  Serial.print("\t");
+  Serial.print(digitalRead(TILT));
   // Serial.print("\t");
   // Serial.print(sensorValues[6);
   Serial.println();
