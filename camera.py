@@ -5,7 +5,7 @@ from machine import UART
 
 state = 0
 search = 0
-uart = UART(3, 9600)
+uart = UART(1, 9600)
 uart.init(9600)
 black_thresholds = [(0, 20, -10, 10, -10, 10), (1, 6, -15, 12, -13, 16)]
 red_threshold = [(0, 20, 5, 50, 5, 50), (0, 50, 75, 17, -30, 47)]
@@ -24,8 +24,29 @@ last_case = None
 rotations = ["R", "R", "L", "L"]
 rotation = 3
 
+# 0, 2 -> Silver
+# 1, 3 -> Green Triangle
+# 4 -> Black
+# 5 -> Red Triangle
+# 6 -> Exit
+# match state:
+#   case 0 | 2 | 4 if search == 1:
+#       # Search
+#   case 0 | 2:
+#       # Silver
+#   case 1 | 3:
+#       # Green Triangle
+#   case 4:
+#       # Black
+#   case 5:
+#       # Red Triangle
+#   case 6:
+#       # Exit
+
+
 def validCircle(blob):
-    if(blob.rect()[2]/blob.rect()[3] < 1.2 and blob.rect()[2]/blob.rect()[3] > 0.8): return True
+    ratio = blob.rect()[2]/blob.rect()[3]
+    if(ratio < 1.2 and ratio > 0.8): return True
     else: return False
 
 def validSilver(circle):
@@ -81,7 +102,7 @@ def goToTriangle(threshold):
 while True:
     clock.tick()
     print("State: ", state)
-    img = sensor.snapshot().lens_corr(1.8).crop(roi=(0, 35, 160, 80))
+    img = sensor.snapshot().lens_corr(1.8)#.crop(roi=(0, 35, 160, 80))
 #        if(changing_search):
 #            uart.write("R")
 #            if(search == 2):
