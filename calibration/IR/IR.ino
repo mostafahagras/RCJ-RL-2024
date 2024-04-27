@@ -7,12 +7,12 @@
 #define P2 49
 #define P3 47
 #define P4 45
-#define P5 A0
-#define P6 39
-#define P7 A1
-#define P8 A2
-#define P9 A3
-#define P10 A4
+#define P5 A1
+#define P6 14
+#define P7 A2
+#define P8 A3
+#define P9 A4
+#define P10 A0
 
 // #define OBSTACLE 22
 // #define LEFT_OBSTACLE 39

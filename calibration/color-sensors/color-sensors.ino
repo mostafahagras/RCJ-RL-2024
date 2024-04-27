@@ -1,5 +1,17 @@
+#include "Adafruit_VL53L0X.h"
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
+
+#define LOX1_ADDRESS 0x32
+#define LOX2_ADDRESS 0x31
+#define SHT_LOX1 32
+#define SHT_LOX2 34
+
+Adafruit_VL53L0X lox1 = Adafruit_VL53L0X();
+Adafruit_VL53L0X lox2 = Adafruit_VL53L0X();
+
+VL53L0X_RangingMeasurementData_t measure1;
+VL53L0X_RangingMeasurementData_t measure2;
 #define NONE 0
 #define GREEN 1
 #define RED 2
@@ -17,10 +29,62 @@ Adafruit_TCS34725 tcs[] = {
 };
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Wire.begin();
+  // pinMode(24, INPUT);
+  // pinMode(52, INPUT);
+  chooseBus(0);
+  pinMode(SHT_LOX1, OUTPUT);
+  pinMode(SHT_LOX2, OUTPUT);
+  digitalWrite(SHT_LOX1, LOW);
+  digitalWrite(SHT_LOX2, LOW);
+  setID();
   initColorSensors();
 }
+
+void setID() {
+  // all reset
+  digitalWrite(SHT_LOX1, LOW);    
+  digitalWrite(SHT_LOX2, LOW);
+  delay(10);
+  // all unreset
+  digitalWrite(SHT_LOX1, HIGH);
+  digitalWrite(SHT_LOX2, HIGH);
+  delay(10);
+
+  // activating LOX1 and resetting LOX2
+  digitalWrite(SHT_LOX1, HIGH);
+  digitalWrite(SHT_LOX2, LOW);
+
+  // initing LOX1
+  if(!lox1.begin(LOX1_ADDRESS)) {
+    Serial.println(F("Failed to boot left VL53L0X"));
+    while(1);
+  }
+  delay(10);
+
+  // activating LOX2
+  digitalWrite(SHT_LOX2, HIGH);
+  delay(10);
+
+  //initing LOX2
+  if(!lox2.begin(LOX2_ADDRESS)) {
+    Serial.println(F("Failed to boot front VL53L0X"));
+    // while(1);
+  }
+}
+
+float leftTOF() {
+  lox2.rangingTest(&measure2, false);
+  return measure2.RangeMilliMeter;
+}
+
+float frontTOF() {
+  lox1.rangingTest(&measure1, false);
+  return measure1.RangeMilliMeter;
+}
+
+unsigned long t = millis();
 
 void loop() {
   int SensorOneReading = readColors(0);
@@ -40,16 +104,32 @@ void loop() {
   } else {
     Serial.write(BOTH_NONE);
   }
+  chooseBus(0);
+  float left = leftTOF();
+  float front = frontTOF();
+  Serial.print("\t\t");
+  Serial.print(left);
+  Serial.print("\t");
+  Serial.print(front);
+  Serial.print("\t");
+  Serial.print(digitalRead(26));
+  Serial.print(digitalRead(28));
+  Serial.print(digitalRead(30));
+  Serial.print("\t Itr/s: ");
+  float dt = millis() - t;
+  Serial.print(1/(dt/1000));
+  t = millis();
   Serial.println(" ");
 }
 
+
 void initColorSensors() {
   for (int i = 0; i < 2; i++) {
-    // Serial.println(i);
-    chooseBus(i);
+    Serial.println(i);
+    chooseBus(i+1);
     if (tcs[i].begin()) {
-      // Serial.print("Found sensor ");
-      // Serial.println(i + 1);
+      Serial.print("Found sensor ");
+      Serial.println(i + 1);
     } else {
       // Serial.println("No Sensor Found");
       // while (true)
@@ -59,7 +139,7 @@ void initColorSensors() {
 }
 
 int readColors(byte sensorNum) {
-  chooseBus(sensorNum);
+  chooseBus(sensorNum+1);
   float r, g, b;
   // tcs[sensorNum].getRGB(&r, &g, &b);
   tcs[sensorNum].getRGB(&r, &g, &b);
