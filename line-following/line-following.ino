@@ -5,12 +5,12 @@
 #define NONE 0
 #define GREEN 1
 #define RED 2
-#define BASE_SPEED 100
+#define BASE_SPEED 60
 #define RAMP_SPEED 150
 #define MAX_SPEED 254
 #define SPEED_CHANGE 250
 // int sensorPins[5]{ 53, 51, 49, 47, 45 };
-int sensorPins[11]{ 53, 51, 49, 47, 45, A0, 39, A1, A2, A3, A4 };
+int sensorPins[11]{ 53, 51, 49, 47, 45, A0, 43, 41, 39, 37, 35 };
 #define OBSTACLE 22
 #define LEFT_OBSTACLE 39
 #define RIGHT_OBSTACLE 52
@@ -20,8 +20,8 @@ float weights[11] = { -0.5, -0.5, -0.5, -0.5, -0.5, 0, 0.5, 0.5, 0.5, 0.5, 0.5 }
 #define RIGHT_MOTOR_DIRECTION 10
 #define LEFT_MOTOR_PWM 11
 #define RIGHT_MOTOR_PWM 9
-#define FRONT 1
-#define BACK 0
+#define FRONT 0
+#define BACK 1
 #define interval 1000
 
 Adafruit_TCS34725 tcs[] = {
@@ -59,7 +59,7 @@ void setup() {
   pinMode(LEFT_MOTOR_PWM, OUTPUT);
   pinMode(RIGHT_MOTOR_DIRECTION, OUTPUT);
   pinMode(RIGHT_MOTOR_PWM, OUTPUT);
-  // Serial.begin(9600);
+  Serial.begin(9600);
   initColorSensors();
   // Serial.println("after init");
   // arm.attach(7);
@@ -69,9 +69,9 @@ void setup() {
 
 void initColorSensors() {
   for (int i = 0; i < 2; i++) {
-    chooseBus(i+1);
+    chooseBus(i);
+    Serial.print(i+1);
     if(tcs[i].begin()) {
-      Serial.print(i+1);
       Serial.println("Done");
     } else {
       Serial.println("Failed");
@@ -89,20 +89,20 @@ int readColors(byte sensorNum) {
   chooseBus(sensorNum+1);
   float r, g, b;
   tcs[sensorNum].getRGB(&r, &g, &b);
-  // Serial.print(sensorNum);
-  // Serial.print(": ");
-  // Serial.print(" R: ");
-  // Serial.print(r);
-  // Serial.print("\t");
-  // Serial.print("G: ");
-  // Serial.print(g);
-  // Serial.print("\t");
-  // Serial.print("B: ");
-  // Serial.print(b);
-  // Serial.print("\t");
-  if (g - r > 20 && g - b > 20) {
+  Serial.print(sensorNum+1);
+  Serial.print(": ");
+  Serial.print(" R: ");
+  Serial.print(r);
+  Serial.print("\t");
+  Serial.print("G: ");
+  Serial.print(g);
+  Serial.print("\t");
+  Serial.print("B: ");
+  Serial.print(b);
+  Serial.print("\t");
+  if (g - r > 30 && g - b > 30) {
     return GREEN;
-  } else if (r - g > 20 && r - b > 20) {
+  } else if (r - g > 30 && r - b > 30) {
     return RED;
   } else {
     return NONE;
@@ -194,7 +194,7 @@ char checkRed() {
 }
 
 int reading(int pin) {
-  return analogRead(pin) > 400 ? 1 : 0;
+  return analogRead(pin) > 500 ? 1 : 0;
 }
 
 void obstacle() {
@@ -221,43 +221,46 @@ void obstacle() {
   }
 }
 
-// void handleGreen() {
-//   stop(0);
-//   bool leftGreen = false;
-//   bool rightGreen = false;
-//   previousMillis = millis();
-//   while (millis() - previousMillis < 500) {
-//     char result = checkGreen();
-//     if (result == 71) {
-//       leftGreen = true;
-//       rightGreen = true;
-//       deadEnd();
-//       break;
-//     } else if (result == 70) {
-//       leftGreen = true;
-//     } else if (result == 72) {
-//       rightGreen = true;
-//     }
-//   }
-//   if (leftGreen && !rightGreen) {
-//     left();
-//     forward();
-//     delay(100);
-//   } else if (!leftGreen && rightGreen) {
-//     right();
-//     forward();
-//     delay(100);
-//   } else if (!leftGreen && !rightGreen) {
-//     forward();
-//     delay(100);
-//   }
-// }
+void handleGreen() {
+  stop(0);
+    bool leftGreen = false;
+    bool rightGreen = false;
+    previousMillis = millis();
+    while (millis() - previousMillis < 500) {
+      char result = checkGreen();
+      if (result == 71) {
+        leftGreen = true;
+        rightGreen = true;
+        deadEnd();
+        break;
+      } else if (result == 70) {
+        leftGreen = true;
+      } else if (result == 72) {
+        rightGreen = true;
+      }
+    }
+    if (leftGreen && !rightGreen) {
+      left();
+      forward();
+      delay(200);
+    } else if (!leftGreen && rightGreen) {
+      right();
+      forward();
+      delay(200);
+    } else if (!leftGreen && !rightGreen) {
+      forward();
+      delay(100);
+    }
+}
 
 void loop() {
-  // readColors(0);
-  // readColors(1);
-  // Serial.println();
-  // if (inEvacuation && false) {
+  readColors(0);
+  readColors(1);
+  Serial.println();
+  // if(!(digitalRead(2) || digitalRead(3) || digitalRead(4))) {
+  //   inEvacuation = true;
+  // }
+  // if (inEvacuation) {
   //   Serial2.readBytes(message, 1);
   //   Serial.print(message[0]);
   //   if (message[0] == 70) {  // FORWARD
@@ -345,10 +348,12 @@ void loop() {
   //     // Serial.println(message);
   //     //   stop(0);
   //   } 
-  // } else {
+  // } 
+  // else {
   // obstacle();
   // checkTilt();
   // }
+  // else {
   float position = 0;
   for (int i = 0; i < 11; i++) {
     position += digitalRead(sensorPins[i]) * weights[i];
@@ -360,109 +365,15 @@ void loop() {
   if (
     (digitalRead(sensorPins[0]) + digitalRead(sensorPins[1]) + digitalRead(sensorPins[2]) + digitalRead(sensorPins[3]) + digitalRead(sensorPins[4]) > 3)
     && (digitalRead(sensorPins[6]) + digitalRead(sensorPins[7]) + digitalRead(sensorPins[8]) + digitalRead(sensorPins[9]) + digitalRead(sensorPins[10]) > 3)) {
-    // forward();
-    // delay(100);
-    stop(0);
-    bool leftGreen = false;
-    bool rightGreen = false;
-    previousMillis = millis();
-    while (millis() - previousMillis < 500) {
-      char result = checkGreen();
-      if (result == 71) {
-        leftGreen = true;
-        rightGreen = true;
-        deadEnd();
-        break;
-      } else if (result == 70) {
-        leftGreen = true;
-      } else if (result == 72) {
-        rightGreen = true;
-      }
-    }
-    if (leftGreen && !rightGreen) {
-      // digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
-      // digitalWrite(RIGHT_MOTOR_DIRECTION, BACK);
-      // analogWrite(LEFT_MOTOR_PWM, 254);
-      // analogWrite(RIGHT_MOTOR_PWM, 254);
-      // delay(5000);
-      left();
-      forward();
-      delay(200);
-    } else if (!leftGreen && rightGreen) {
-      // digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
-      // digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
-      // analogWrite(LEFT_MOTOR_PWM, 254);
-      // analogWrite(RIGHT_MOTOR_PWM, 254);
-      // delay(5000);
-      right();
-      forward();
-      delay(200);
-    } else if (!leftGreen && !rightGreen) {
-      forward();
-      delay(100);
-    }
+    forward();
+    delay(100);
+    handleGreen();
   } else if (
     (digitalRead(sensorPins[0]) + digitalRead(sensorPins[1]) + digitalRead(sensorPins[2]) + digitalRead(sensorPins[3]) + digitalRead(sensorPins[4]) >= 4) && reading(sensorPins[5]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
-    // forward();
-    // delay(100);
-    stop(0);
-    bool leftGreen = false;
-    bool rightGreen = false;
-    previousMillis = millis();
-    while (millis() - previousMillis < 500) {
-      char result = checkGreen();
-      if (result == 71) {
-        leftGreen = true;
-        rightGreen = true;
-        deadEnd();
-        break;
-      } else if (result == 70) {
-        leftGreen = true;
-      } else if (result == 72) {
-        rightGreen = true;
-      }
-    }
-    if (leftGreen && !rightGreen) {
-      left();
-      forward();
-      delay(200);
-    } else if (!leftGreen && rightGreen) {
-      right();
-      forward();
-      delay(200);
-    } else if (!leftGreen && !rightGreen) {
-      forward();
-      delay(100);
-    }
+    handleGreen();
   } else if (
     !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && reading(sensorPins[5]) && (digitalRead(sensorPins[6]) + digitalRead(sensorPins[7]) + digitalRead(sensorPins[8]) + digitalRead(sensorPins[9]) + digitalRead(sensorPins[10]) >= 4)) {
-    // forward();
-    // delay(100);
-    stop(0);
-    bool leftGreen = false;
-    bool rightGreen = false;
-    previousMillis = millis();
-    while (millis() - previousMillis < 500) {
-      char result = checkGreen();
-      if (result == 71) {
-        leftGreen = true;
-        rightGreen = true;
-        deadEnd();
-        break;
-      } else if (result == 70) {
-        leftGreen = true;
-      } else if (result == 72) {
-        rightGreen = true;
-      }
-    }
-    if (leftGreen && !rightGreen) {
-      left();
-    } else if (!leftGreen && rightGreen) {
-      right();
-    } else if (!leftGreen && !rightGreen) {
-      forward();
-      delay(100);
-    }
+    handleGreen();
   } else {
     digitalWrite(LEFT_MOTOR_DIRECTION, leftMotorDirection);
     digitalWrite(RIGHT_MOTOR_DIRECTION, rightMotorDirection);

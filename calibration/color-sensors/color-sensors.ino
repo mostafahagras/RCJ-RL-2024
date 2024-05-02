@@ -4,8 +4,8 @@
 
 #define LOX1_ADDRESS 0x32
 #define LOX2_ADDRESS 0x31
-#define SHT_LOX1 32
-#define SHT_LOX2 34
+#define SHT_LOX1 6
+#define SHT_LOX2 5
 
 Adafruit_VL53L0X lox1 = Adafruit_VL53L0X();
 Adafruit_VL53L0X lox2 = Adafruit_VL53L0X();
@@ -30,6 +30,7 @@ Adafruit_TCS34725 tcs[] = {
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("Start setup");
   Wire.begin();
   // pinMode(24, INPUT);
   // pinMode(52, INPUT);
@@ -39,7 +40,9 @@ void setup() {
   digitalWrite(SHT_LOX1, LOW);
   digitalWrite(SHT_LOX2, LOW);
   setID();
+  // Serial.println("Done tof");
   initColorSensors();
+  // Serial.println("Done color");
 }
 
 void setID() {
@@ -112,9 +115,9 @@ void loop() {
   Serial.print("\t");
   Serial.print(front);
   Serial.print("\t");
-  Serial.print(digitalRead(26));
-  Serial.print(digitalRead(28));
-  Serial.print(digitalRead(30));
+  Serial.print(digitalRead(2));
+  Serial.print(digitalRead(3));
+  Serial.print(digitalRead(4));
   Serial.print("\t Itr/s: ");
   float dt = millis() - t;
   Serial.print(1/(dt/1000));
