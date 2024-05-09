@@ -1,7 +1,7 @@
 #include "Adafruit_VL53L0X.h"
 #include <Wire.h>
 
-int digitalPins[10]{ 53, 51, 49, 47, 45, 39, A1, A2, A3, A4 };
+int sensorPins[10]{ 53, 51, 49, 47, 45, 43, 41, 39, 37, 35 };
 #define analogIR A0
 #define LOX1_ADDRESS 0x32
 #define LOX2_ADDRESS 0x31
@@ -26,6 +26,9 @@ VL53L0X_RangingMeasurementData_t measure2;
 #define FRONT 0
 #define BACK 1
 
+bool has_exited_room = false;
+bool turn_right = false;
+
 void setID() {
   // all reset
   digitalWrite(SHT_LOX1, LOW);    
@@ -42,7 +45,7 @@ void setID() {
 
   // initing LOX1
   if(!lox1.begin(LOX1_ADDRESS)) {
-    Serial.println(F("Failed to boot left VL53L0X"));
+    Serial.println(F("Failed to boot right VL53L0X"));
     while(1);
   }
   delay(10);
@@ -107,7 +110,7 @@ void backward() {
   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
 }
 
-void left() {
+void leftt() {
   digitalWrite(LEFT_MOTOR_DIRECTION, BACK);
   digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
   analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
@@ -121,39 +124,80 @@ void right() {
   analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
 }
 
-void forwardNextToWall(float distanceMmLeft, float distanceMmFront) {
-  float dsLeft = (distanceMmLeft - 120); // ideal distance: 15cm
-  float dsFront = (distanceMmFront - 120);
-  if(dsFront < 0 && dsLeft < 0) {
-    left();
-    delay(2000);
-  } else if(dsFront < 0 & distanceMmLeft > 500) {
+void forwardNextToWall(float rightTOF, float front) {
+  Serial.print(rightTOF);
+  Serial.print(" ");
+  Serial.print(front);
+  Serial.println();
+  float dsRight = (rightTOF - 120);
+  float dsFront = (front - 120);
+  if(
+      digitalRead(sensorPins[0])+
+      digitalRead(sensorPins[1])+
+      digitalRead(sensorPins[2])+
+      digitalRead(sensorPins[3])+
+      digitalRead(sensorPins[4])+
+      digitalRead(sensorPins[5])+
+      digitalRead(sensorPins[6])+
+      digitalRead(sensorPins[7])+
+      digitalRead(sensorPins[8])+
+      digitalRead(sensorPins[9])+
+      digitalRead(sensorPins[10]) >= 5
+    ) {
+      backward();
+      delay(200);
+      leftt();
+      delay(200);
+    } 
+  else if(front < 150 && rightTOF <= 300) {
+    leftt();
+    delay(100);
+  } else if(rightTOF > 500) {
+    while (!(
+      (digitalRead(sensorPins[0])+
+      digitalRead(sensorPins[1])+
+      digitalRead(sensorPins[2])+
+      digitalRead(sensorPins[3])+
+      digitalRead(sensorPins[4])+
+      digitalRead(sensorPins[5])+
+      digitalRead(sensorPins[6])+
+      digitalRead(sensorPins[7])+
+      digitalRead(sensorPins[8]) == 0
+      && digitalRead(sensorPins[9]) && digitalRead(sensorPins[10]))
+    )&&
+    !(digitalRead(sensorPins[9])+
+      digitalRead(sensorPins[10])+
+      digitalRead(sensorPins[2])+
+      digitalRead(sensorPins[3])+
+      digitalRead(sensorPins[4])+
+      digitalRead(sensorPins[5])+
+      digitalRead(sensorPins[6])+
+      digitalRead(sensorPins[7])+
+      digitalRead(sensorPins[8]) == 0
+      && digitalRead(sensorPins[0]) && digitalRead(sensorPins[1]))) {
+      digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
+      digitalWrite(RIGHT_MOTOR_DIRECTION, BACK);
+      analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
+      analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED/2);
+    }
+    if(digitalRead(sensorPins[10])) {
+      turn_right = true;
+    }
+    has_exited_room = true;
+  } else if(rightTOF < 300 && rightTOF > 50) {
     forward();
-    delay(500);
-    right();
-    delay(2000);
-    forward();
-    delay(500);
-  } else if(dsLeft < 50 && dsLeft > -50) {
-    forward();
+  } else if(rightTOF <= 50) {
+    digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
+    digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
+    analogWrite(LEFT_MOTOR_PWM, BASE_SPEED/2);
+    analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED);
+  } else if(rightTOF >= 300 ) {
+    digitalWrite(LEFT_MOTOR_DIRECTION, FRONT);
+    digitalWrite(RIGHT_MOTOR_DIRECTION, FRONT);
+    analogWrite(LEFT_MOTOR_PWM, BASE_SPEED);
+    analogWrite(RIGHT_MOTOR_PWM, BASE_SPEED/2);
   } else {
-  // too left -> dsLeft -ve, turn right, left motor > right motor
-  // too right -> dsLeft +ve, turn left, left motor < right motor
-    digitalWrite(LEFT_MOTOR_DIRECTION, BASE_SPEED + dsLeft > 0 ? FRONT : BACK);
-    digitalWrite(RIGHT_MOTOR_DIRECTION, BASE_SPEED - dsLeft > 0 ? FRONT : BACK);
-    analogWrite(LEFT_MOTOR_PWM, m(BASE_SPEED + dsLeft));
-    analogWrite(RIGHT_MOTOR_PWM, m(BASE_SPEED - dsLeft));
-    delay(150);
-    stop();
     forward();
-    delay(150);
-    stop();
-    digitalWrite(LEFT_MOTOR_DIRECTION, BASE_SPEED - dsLeft > 0 ? FRONT : BACK);
-    digitalWrite(RIGHT_MOTOR_DIRECTION, BASE_SPEED + dsLeft > 0 ? FRONT : BACK);
-    analogWrite(LEFT_MOTOR_PWM, m(BASE_SPEED - dsLeft));
-    analogWrite(RIGHT_MOTOR_PWM, m(BASE_SPEED + dsLeft));
-    delay(150);
-    stop();
   }
 }
 
@@ -179,40 +223,37 @@ void chooseBus(uint8_t bus) {
   Wire.write(1 << bus);
   Wire.endTransmission();
 }
-
+bool inRoom = true;
 void loop() {
-  // Serial.print(digitalRead(FRONT_OBSTACLE));
-  // Serial.println(digitalRead(RIGHT_OBSTACLE));
-  // Serial.println("loop");
-  // for(int i = 0; i < 10; i++) {
-  //   if(digitalRead(digitalPins[i])) {
-  //     stop();
-  //     while(true) {}
-  //   }
-  // }
-  float left = leftTOF();
-  float front = frontTOF();
-  Serial.print(left);
-  Serial.print(" ");
-  Serial.print(front);
-  Serial.println();
-  forwardNextToWall(left, front);
-  // read_dual_sensors();
-  // if (digitalRead(FRONT_OBSTACLE) && digitalRead(RIGHT_OBSTACLE)) { // doesn't read doesn't read
-  //   backward();
-  // } else if (digitalRead(FRONT_OBSTACLE) && !digitalRead(RIGHT_OBSTACLE)) { // doesn't read reads
-  //   forward();
-  // } else if (!digitalRead(FRONT_OBSTACLE) && digitalRead(RIGHT_OBSTACLE)) { // reads doesn't read
-  //   right();
-  // } else if (!digitalRead(FRONT_OBSTACLE) && !digitalRead(RIGHT_OBSTACLE)) { // reads reads
-  //   while(!digitalRead(FRONT_OBSTACLE)) {
-  //     left();
-  //   }
-  //   // forward();
-  //   // delay(250);
-  //   while(digitalRead(RIGHT_OBSTACLE)) {
-  //     left();
-  //   }
-    // forward();
-    // delay(250);
+  if(!inRoom) {
+    while(digitalRead(2) || digitalRead(3) || digitalRead(4)) {
+      forward();
+    }
+    inRoom = true;
+  } else {
+    if(!has_exited_room && inRoom) {
+      if(digitalRead(2)&&digitalRead(3)&&digitalRead(4)) {
+        backward();
+        delay(1500);
+        leftt();
+        delay(2500);
+        forward();
+        delay(2000);
+      }
+      float front = leftTOF();
+      float right = frontTOF();
+      forwardNextToWall(right, front);
+    } else {
+      if(turn_right) {
+        right();
+      } else {
+        leftt();
+      }
+      delay(300);
+      while(!(digitalRead(2)||digitalRead(3)||digitalRead(4))) {
+        forward();
+      }
+      stop();
+    }
+  }
 }
