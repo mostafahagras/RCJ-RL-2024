@@ -1,22 +1,35 @@
 #ifndef DEFINES_H
 #define DEFINES_H
-
-/* Debugging */
+#include "ir.h"
+/* Debugging, Calibration */
 #define DEBUG_MODE 0 // 0 -> off, 1 -> on
+#define CALIBRATION_PIN A13
 
-/* Error LEDs */
-#define COLOR_ERROR_LED LED_BUILTIN
-#define TOF_ERROR_LED LED_BUILTIN
-#define IMU_ERROR_LED LED_BUILTIN // TODO: change to actual pins
+/* LEDs */
+#define COLOR_ERROR_LED A5
+#define TOF_ERROR_LED A6
+#define IMU_ERROR_LED A7 // TODO: change to actual pins
+#define CENTER_IR_LED A4
+#define SILVER_TAPE_LED A3
 #define turnOnLED(p) (digitalWrite(p, HIGH))
+#define turnOffLED(p) (digitalWrite(p, LOW))
 
 /* IR Sensors */
-#define BLACK_THRESHOLD 500
+#define BLACK_THRESHOLD 400
 const uint8_t sensorPins[11] = { 53, 51, 49, 47, 45, A0, 43, 41, 39, 37, 35 };
+#define IR0 53
+#define IR1 51
+#define IR2 49
+#define IR3 47
+#define IR4 45
+#define IR5 A0
+#define IR6 43
+#define IR7 41
+#define IR8 39
+#define IR9 37
+#define IR10 35
 const float weights[11] = { -0.5, -0.5, -0.5, -0.5, -0.5, 0, 0.5, 0.5, 0.5, 0.5, 0.5 };
 #define reading(a) (analogRead(a) > BLACK_THRESHOLD ? 1 : 0)
-#define CENTER_IR_LED LED_BUILTIN
-#define SILVER_IR_LED LED_BUILTIN // TODO: change to actual pins
 
 /* Color Sensors */
 #define LEFT_COLOR 1 
@@ -72,10 +85,14 @@ extern bool wallFollowing = false;
 
 /* IMU */
 #define IMU_ADDRESS 0x68
-#define IMU_ERROR_FACTOR 1.2778 // TODO: TEST IN DIFFERENT ENVIROMENTS
+#define IMU_ERROR_FACTOR 1.2778
 
 /* Arm (Servos) */
 #define ARM 8
 #define GRIPPER 7
+
+/* Obstacle */
+#define OBSTACLE A1
+#define SEES_OBSTACLE() ((PINF & _BV(PF1)) ? 0 : 1)
 
 #endif

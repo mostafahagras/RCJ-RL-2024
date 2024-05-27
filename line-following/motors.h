@@ -51,10 +51,11 @@ void drive(int16_t leftSpeed, int16_t rightSpeed, unsigned long ms = 0) {
 }
 
 void leftIntersection() {
+  Serial.println("Left intersection");
   unsigned long previousMillis = millis();
   while (
     !(
-      !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4])
+      !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) /*&& !digitalRead(sensorPins[4])*/
       && (digitalRead(sensorPins[6]) || digitalRead(sensorPins[7]) || digitalRead(sensorPins[8]) || digitalRead(sensorPins[9]) || digitalRead(sensorPins[10])))
     || millis() - previousMillis < 500) {
     left(150);
@@ -62,16 +63,18 @@ void leftIntersection() {
 }
 
 void rightIntersection() {
+  Serial.println("Right intersection");
   unsigned long previousMillis = millis();
   // int initialHeading = getHeading();
   // int deltaHeading = getHeading() - initialHeading;
   while (
-    (!(
+    !(
       (digitalRead(sensorPins[0]) || digitalRead(sensorPins[1]) || digitalRead(sensorPins[2]) || digitalRead(sensorPins[3]) || digitalRead(sensorPins[4]))
-      && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])
-    || millis() - previousMillis < 500)) 
+      && /*!digitalRead(sensorPins[6]) &&*/ !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])
+    )|| millis() - previousMillis < 500
     //&& deltaHeading < 115
   ) {
+    Serial.println("inside while");
     right(150);
     // deltaHeading = getHeading() - initialHeading;
   }

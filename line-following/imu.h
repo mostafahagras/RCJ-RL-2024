@@ -73,6 +73,18 @@ int getHeading() {
   }
 }
 
+int getPitch() {
+  Serial.print(mpu.getMagX());
+  Serial.print(", ");
+  Serial.print(mpu.getMagY());
+  Serial.print(", ");
+  Serial.print(mpu.getMagZ());
+  Serial.print(", ");
+  int pitch = (int)mpu.getPitch();
+  Serial.println(pitch);
+  return pitch;
+}
+
 void initIMU() {
   MPU9250Setting setting;
   setting.accel_fs_sel = ACCEL_FS_SEL::A16G;//2 4 8 16
@@ -92,7 +104,7 @@ void initIMU() {
     }
   }
   mpu.setGyroBias(0.60, -0.92, 1.03);
-  delay(1500); // remove this?
+  // delay(1500); // remove this?
   while (read_count < 50) {
     getHeading();
   }
