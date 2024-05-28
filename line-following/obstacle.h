@@ -11,57 +11,55 @@ void avoidObstacle() {
   if (rightDistance <= 200) {
     if (DEBUG_MODE) { Serial.println("Detected a wall on the right, turning left to avoid obstacle"); }
     left90();
-    forward(BASE_SPEED, 850);
+    forward(120, 850);
     right90();
     unsigned long startMillis = millis();
-    while (millis() - startMillis < 2000 && 
-      !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])
-    ) {
+    while (millis() - startMillis < 1800 && !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
       forward();
     }
-    if(millis() - startMillis >= 2000) {
+    if (millis() - startMillis >= 1800) {
       right90();
       startMillis = millis();
-      while(millis() - startMillis < 2000 && 
-      !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])
-      ) {
+      while (millis() - startMillis < 1800 && !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
         forward();
       }
-      if(millis() - startMillis >= 2000) {
+      if (millis() - startMillis >= 1800) {
         right90();
-        forward(BASE_SPEED, 1000);
+        while (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
+          forward();
+        }
+        forward(120, 250);
       }
       left90();
     } else {
-      forward(BASE_SPEED, 250);
+      forward(120, 250);
       left90();
     }
   } else {
     if (DEBUG_MODE) { Serial.println("No walls detected on the right, avoiding obstacle..."); }
     right90();
-    forward(BASE_SPEED, 850);
+    forward(120, 850);
     left90();
     unsigned long startMillis = millis();
-    while (millis() - startMillis < 2000 && 
-      !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])
-    ) {
+    while (millis() - startMillis < 1800 && !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
       forward();
     }
-    if(millis() - startMillis >= 2000) {
+    if (millis() - startMillis >= 1800) {
       left90();
       startMillis = millis();
-      while(millis() - startMillis < 2000 && 
-      !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])
-      ) {
+      while (millis() - startMillis < 1800 && !digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
         forward();
       }
-      if(millis() - startMillis >= 2000) {
+      if (millis() - startMillis >= 1800) {
         left90();
-        forward(BASE_SPEED, 1000);
+        while (!digitalRead(sensorPins[0]) && !digitalRead(sensorPins[1]) && !digitalRead(sensorPins[2]) && !digitalRead(sensorPins[3]) && !digitalRead(sensorPins[4]) && !digitalRead(sensorPins[6]) && !digitalRead(sensorPins[7]) && !digitalRead(sensorPins[8]) && !digitalRead(sensorPins[9]) && !digitalRead(sensorPins[10])) {
+          forward();
+        }
+        forward(120, 250);
       }
       right90();
     } else {
-      forward(BASE_SPEED, 250);
+      forward(120, 250);
       right90();
     }
   }

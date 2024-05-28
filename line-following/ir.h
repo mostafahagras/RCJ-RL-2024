@@ -15,4 +15,8 @@
 #define _IR9()  ((PINC & _BV(PC0)) ? 1 : 0)  // PC0 corresponds to digital pin 37
 #define _IR10() ((PINC & _BV(PC2)) ? 1 : 0)  // PC2 corresponds to digital pin 35
 
+#define SILVER_1()  ((PIND & _BV(PD2)) ? 0 : 1)  // PD2 corresponds to digital pin 2
+#define SILVER_2()  ((PIND & _BV(PD3)) ? 0 : 1)  // PD3 corresponds to digital pin 3
+#define SILVER_3()  ((PING & _BV(PG5)) ? 0 : 1) // PD3 corresponds to digital pin 4
+
 #endif

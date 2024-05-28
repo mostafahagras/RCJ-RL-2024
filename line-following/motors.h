@@ -87,7 +87,7 @@ void deadEnd() {
     right();
     deltaHeading = getHeading() - initialHeading;
   }
-  backward(BASE_SPEED, 250); // TODO: test it
+  backward(120, 250);
 }
 
 void right90() {

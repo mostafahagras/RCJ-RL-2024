@@ -9,6 +9,8 @@
 
 // bool inEvacuation = false;
 // char message[2];
+int whiteCounter = 0;
+bool shouldCheckColor = false;
 
 void setup() {
   if (DEBUG_MODE) {
@@ -66,6 +68,13 @@ void setup() {
 }
 
 void loop() {
+  if(Serial3.available()) {
+    Serial3.readBytes(message, 1);
+    // Serial.println(message);
+    if(message[0] == 'e') {
+      shouldCheckColor = true;
+    }
+  }
   // if(inEvacuation) {
   //   Serial3.readBytes(message, 1);
   //   Serial.println("hello");
@@ -86,37 +95,39 @@ void loop() {
   if (SEES_OBSTACLE()) {
     avoidObstacle();
   }
-  if (digitalRead(IR0) && digitalRead(IR1) && digitalRead(IR2) && digitalRead(IR3) && digitalRead(IR4) && digitalRead(IR6) && digitalRead(IR7) && digitalRead(IR8) && digitalRead(IR9) && digitalRead(IR10)) {
+  if (_IR0() && _IR1() && _IR2() && _IR3() && _IR4() && _IR6() && _IR7() && _IR8() && _IR9() && _IR10()) {
     handleGreen();
-  } else if (reading(IR5) && (digitalRead(IR0) + digitalRead(IR1) + digitalRead(IR2) + digitalRead(IR3) + digitalRead(IR4) > 3 && !digitalRead(IR7) && !digitalRead(IR8) && !digitalRead(IR9) && !digitalRead(IR10))) {
+  } else if (reading(IR5) && (_IR0() + _IR1() + _IR2() + _IR3() + _IR4() > 3 && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
     handleGreen();
-  } else if (reading(IR5) && (!digitalRead(IR0) && !digitalRead(IR1) && !digitalRead(IR2) && !digitalRead(IR3) && digitalRead(IR6) + digitalRead(IR7) + digitalRead(IR8) + digitalRead(IR9) + digitalRead(IR10) > 3)) {
+  } else if (reading(IR5) && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && _IR6() + _IR7() + _IR8() + _IR9() + _IR10() > 3)) {
     handleGreen();
   } else {
-    float position = 0;
-    for (uint8_t i = 0; i < 11; i++) {
-      position += digitalRead(sensorPins[i]) * weights[i];
-    }
+    const float position = - _IR0() - _IR1() - _IR2() - _IR3() - _IR4() + _IR6() + _IR7() + _IR8() + _IR9() + _IR10();
+    // for (uint8_t i = 0; i < 11; i++) {
+    //   position += digitalRead(sensorPins[i]) * weights[i];
+    // }
     int16_t leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
     int16_t rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
     drive(leftMotorSpeed, rightMotorSpeed);
     if (position == 0 && 
-      (!digitalRead(IR0) && 
-      !digitalRead(IR1) && 
-      !digitalRead(IR2) && 
-      !digitalRead(IR3) && 
-      !digitalRead(IR4) && 
+      (!_IR0() && 
+      !_IR1() && 
+      !_IR2() && 
+      !_IR3() && 
+      !_IR4() && 
       !reading(IR5) &&
-      !digitalRead(IR6) && 
-      !digitalRead(IR7) && 
-      !digitalRead(IR8) && 
-      !digitalRead(IR9) && 
-      !digitalRead(IR10))
+      !_IR6() && 
+      !_IR7() && 
+      !_IR8() && 
+      !_IR9() && 
+      !_IR10())
     ) {
-      if (!digitalRead(2) && !digitalRead(3) && !digitalRead(4)) {
+      if (SILVER_1() && SILVER_2() && SILVER_3()) {
         stop(1000);
       }
-      checkRed();
+      if(shouldCheckColor) {
+        checkRed();
+      }
     }
   }
   // }

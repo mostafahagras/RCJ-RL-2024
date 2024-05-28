@@ -10,7 +10,7 @@ sensor.set_windowing((240, 240))       # Set 240x240 window.
 sensor.skip_frames(time=2000)   # Let the camera adjust.
 uart = UART(1, 9600)
 uart.init(9600)
-state = 4;
+state = 9;
 net = None
 labels = None
 min_confidence = 0.9
@@ -19,8 +19,10 @@ black_threshold = [(0, 11, -11, 1, -4, 7)]#[(0, 20, -10, 10, -10, 10), (1, 6, -1
 exit_line_threshold = [(0, 33, -6, 4, -16, 5)]
 green_threshold = [(12, 36, -48, -21, 24, 37), (12, 60, -61, -3, 17, 56)]#[(10, 30, -50, 0, 5, 30)]
 red_threshold = [(0, 20, -1, 22, 8, 27), (0, 13, -1, 29, -3, 11)]#[(0, 20, 5, 50, 5, 50), (0, 50, 75, 17, -30, 47)]
+red_line_threshold = [(27, 100, 15, 127, 15, 127), (22, 100, 14, 127, 6, 127)]
 last_case = None
 message = ""
+red_line_threshold = [(27, 100, 15, 127, 15, 127)]
 try:
     # Load built in model
     labels, net = tf.load_builtin_model('trained')
@@ -211,5 +213,14 @@ while(True):
                 largest = max(filtered, key=lambda b: b.rect()[2] * b.rect()[3])
                 uart.write("E")
                 img.draw_rectangle(largest.rect())
+    if state == 9:
+        blobs = img.find_blobs(red_line_threshold, merge=True, roi=(20, 200, 200, 40), aree_threshold=500)
+        if len(blobs):
+            uart.write("e")
+            filtered = list(filter(lambda b: b.rect()[2] / b.rect()[3] > 3, blobs))
+            if len(filtered):
+                blob = max(filtered, key=lambda b: b.rect()[2] * b.rect()[3])
+                img.draw_rectangle(blob.rect())
+                print("SAW RED")
 #        print("Done Evacuation")
 #    print(clock.fps(), "fps", end="\n\n")
