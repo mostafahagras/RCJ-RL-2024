@@ -7,10 +7,7 @@
 #include "TOFs.h"
 #include "obstacle.h"
 
-// bool inEvacuation = false;
-// char message[2];
-int whiteCounter = 0;
-bool shouldCheckColor = false;
+bool shouldCheckRed = false;
 
 void setup() {
   if (DEBUG_MODE) {
@@ -68,13 +65,6 @@ void setup() {
 }
 
 void loop() {
-  if(Serial3.available()) {
-    Serial3.readBytes(message, 1);
-    // Serial.println(message);
-    if(message[0] == 'e') {
-      shouldCheckColor = true;
-    }
-  }
   // if(inEvacuation) {
   //   Serial3.readBytes(message, 1);
   //   Serial.println("hello");
@@ -92,6 +82,12 @@ void loop() {
   //     }
   //    }
   // } else {
+  if (!shouldCheckRed && Serial3.available()) {
+    Serial3.readBytes(message, 1);
+    if (message[0] == 'e') {
+      shouldCheckRed = true;
+    }
+  }
   if (SEES_OBSTACLE()) {
     avoidObstacle();
   }
@@ -102,30 +98,15 @@ void loop() {
   } else if (reading(IR5) && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && _IR6() + _IR7() + _IR8() + _IR9() + _IR10() > 3)) {
     handleGreen();
   } else {
-    const float position = - _IR0() - _IR1() - _IR2() - _IR3() - _IR4() + _IR6() + _IR7() + _IR8() + _IR9() + _IR10();
-    // for (uint8_t i = 0; i < 11; i++) {
-    //   position += digitalRead(sensorPins[i]) * weights[i];
-    // }
+    const float position = -_IR0() - _IR1() - _IR2() - _IR3() - _IR4() + _IR6() + _IR7() + _IR8() + _IR9() + _IR10();
     int16_t leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
     int16_t rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
     drive(leftMotorSpeed, rightMotorSpeed);
-    if (position == 0 && 
-      (!_IR0() && 
-      !_IR1() && 
-      !_IR2() && 
-      !_IR3() && 
-      !_IR4() && 
-      !reading(IR5) &&
-      !_IR6() && 
-      !_IR7() && 
-      !_IR8() && 
-      !_IR9() && 
-      !_IR10())
-    ) {
+    if (position == 0 && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && !_IR4() && !reading(IR5) && !_IR6() && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
       if (SILVER_1() && SILVER_2() && SILVER_3()) {
         stop(1000);
       }
-      if(shouldCheckColor) {
+      if (shouldCheckRed) {
         checkRed();
       }
     }

@@ -65,24 +65,14 @@ int getHeading() {
     }
     mag_heading -= init_mag_heading;
     yaw = BIAS_ALPHA * gyro_yaw + (1 - BIAS_ALPHA) * mag_heading;
-    Serial.println((int)yaw);
+    if(DEBUG_MODE) {
+      Serial.println((int)yaw);
+    }
     previousHeading = (int)yaw;
     return (int)yaw;
   } else {
     return previousHeading;
   }
-}
-
-int getPitch() {
-  Serial.print(mpu.getMagX());
-  Serial.print(", ");
-  Serial.print(mpu.getMagY());
-  Serial.print(", ");
-  Serial.print(mpu.getMagZ());
-  Serial.print(", ");
-  int pitch = (int)mpu.getPitch();
-  Serial.println(pitch);
-  return pitch;
 }
 
 void initIMU() {
@@ -104,7 +94,6 @@ void initIMU() {
     }
   }
   mpu.setGyroBias(0.60, -0.92, 1.03);
-  // delay(1500); // remove this?
   while (read_count < 50) {
     getHeading();
   }
