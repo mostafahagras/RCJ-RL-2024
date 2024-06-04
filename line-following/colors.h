@@ -17,16 +17,16 @@ void initColorSensors() {
     chooseBus(i);
     if (tcs[i].begin()) {
       if(DEBUG_MODE) {
-        Serial.print("Found sensor " + String(i));
+        Serial.print("Found Color Sensor ");
+        Serial.println(i == 1 ? "(Left)" : "(Right)");
       }
     } else {
       if(DEBUG_MODE) {
-        Serial.print("Failed to find sensor " + String(i));
+        Serial.print("Failed to find Color Sensor ");
+        Serial.println(i == 1 ? "(Left)" : "(Right)");
         while (true); 
-      } else {
-        // TODO: Turn on color sensors error LED  
-        turnOnLED(COLOR_ERROR_LED);
       }
+      turnOnLED(COLOR_ERROR_LED);
     }
   }
 }
