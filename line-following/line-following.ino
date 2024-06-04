@@ -12,6 +12,7 @@ bool shouldCheckRed = false;
 void setup() {
   if (DEBUG_MODE) {
     Serial.begin(115200);
+    Serial.println("Begin setup");
   }
   /* Line following sensors */
   pinMode(IR0, INPUT);
@@ -42,13 +43,19 @@ void setup() {
   chooseBus(0);
   pinMode(RIGHT_TOF_XSHUT, OUTPUT);
   pinMode(FRONT_TOF_XSHUT, OUTPUT);
-  digitalWrite(RIGHT_TOF_XSHUT, LOW);
-  digitalWrite(FRONT_TOF_XSHUT, LOW);
-  initServos();
   initTOFs();
+  initServos();
   initColorSensors();
   Serial3.begin(9600);
+  if (!digitalRead(CALIBRATION_PIN)) {
+    pinMode(THRESHOLD_INCREMENT_INTERRUPT, INPUT_PULLUP);
+    pinMode(THRESHOLD_DECREMENT_INTERRUPT, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(THRESHOLD_INCREMENT_INTERRUPT), INCREMENT_THRESHOLD, FALLING);
+    attachInterrupt(digitalPinToInterrupt(THRESHOLD_DECREMENT_INTERRUPT), DECREMENT_THRESHOLD, FALLING);
+  }
+
   while (!digitalRead(CALIBRATION_PIN)) {
+    Serial.println(BLACK_THRESHOLD);
     if (reading(sensorPins[5])) {
       turnOnLED(CENTER_IR_LED);
     } else {
@@ -62,54 +69,55 @@ void setup() {
   }
   turnOffLED(CENTER_IR_LED);
   turnOffLED(SILVER_TAPE_LED);
+  chooseBus(0);
 }
 
 void loop() {
-  // if(inEvacuation) {
-  //   Serial3.readBytes(message, 1);
-  //   Serial.println("hello");
-  //   Serial.println(message);
-  //   if(message[0] == 'E') {
-  //     inEvacuation = false;
-  //     exitedEvacuation = true;
-  //     handleEvacuation('E');
-  //   } else {
-  //     if(wallFollowing) {
-  //       //handleEvacuation(WALL_FOLLOW);
-  //       wallFollow();
-  //     } else {
-  //       handleEvacuation(message[0]);
-  //     }
-  //    }
-  // } else {
-  if (!shouldCheckRed && Serial3.available()) {
-    Serial3.readBytes(message, 1);
-    if (message[0] == 'e') {
-      shouldCheckRed = true;
-    }
-  }
-  if (SEES_OBSTACLE()) {
-    avoidObstacle();
-  }
-  if (_IR0() && _IR1() && _IR2() && _IR3() && _IR4() && _IR6() && _IR7() && _IR8() && _IR9() && _IR10()) {
-    handleGreen();
-  } else if (reading(IR5) && (_IR0() + _IR1() + _IR2() + _IR3() + _IR4() > 3 && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
-    handleGreen();
-  } else if (reading(IR5) && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && _IR6() + _IR7() + _IR8() + _IR9() + _IR10() > 3)) {
-    handleGreen();
+  if (inEvacuation) {
+    // handleEvacuation(SEARCH);
+    handleEvacuation(wallFollowing ? WALL_FOLLOW : readSerial());
   } else {
-    const float position = -_IR0() - _IR1() - _IR2() - _IR3() - _IR4() + _IR6() + _IR7() + _IR8() + _IR9() + _IR10();
-    int16_t leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
-    int16_t rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
-    drive(leftMotorSpeed, rightMotorSpeed);
-    if (position == 0 && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && !_IR4() && !reading(IR5) && !_IR6() && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
-      if (SILVER_1() && SILVER_2() && SILVER_3()) {
-        stop(1000);
+    if (!shouldCheckRed && Serial3.available()) {
+      Serial3.readBytes(message, 1);
+      if (message[0] == 'e') {
+        shouldCheckRed = true;
       }
-      if (shouldCheckRed) {
-        checkRed();
+    }
+    if (SEES_OBSTACLE()) {
+      avoidObstacle();
+    }
+    if (_IR0() && _IR1() && _IR2() && _IR3() && _IR4() && _IR6() && _IR7() && _IR8() && _IR9() && _IR10()) {
+      handleGreen();
+    } else if (reading(IR5) && (_IR0() + _IR1() + _IR2() + _IR3() + _IR4() > 3 && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
+      handleGreen();
+    } else if (reading(IR5) && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && _IR6() + _IR7() + _IR8() + _IR9() + _IR10() > 3)) {
+      handleGreen();
+    } else {
+      const int8_t position = -_IR0() - _IR1() - _IR2() - _IR3() - _IR4() + _IR6() + _IR7() + _IR8() + _IR9() + _IR10();
+      int16_t leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
+      int16_t rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
+      drive(leftMotorSpeed, rightMotorSpeed);
+      if (position == 0 && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && !_IR4() && !reading(IR5) && !_IR6() && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
+        if (Serial3.available()) {
+          Serial3.readBytes(message, 1);
+          Serial.println(message);
+          if (message[0] == TOGGLE_EVACUATION) {
+            inEvacuation = true;
+            stop(1000);
+            forward(BASE_SPEED, 2000);
+            stop();
+            Serial3.write(TOGGLE_EVACUATION);
+            chooseBus(0);
+          }
+        }
+        // if (inEvacuation) {
+        //   // Serial.println("enter evacuation");
+
+        // }
+        if (shouldCheckRed) {
+          checkRed();
+        }
       }
     }
   }
-  // }
 }
