@@ -38,6 +38,7 @@ FORWARD = "F"
 SEARCH = "S"
 SEARCH_TRIANGLE = "s"
 START_WALL_FOLLOWING = "w"
+TOGGLE_CHECK_ENTRANCE = "a"
 
 # States
 FIRST_SILVER_VICTIM = 0
@@ -53,27 +54,21 @@ inEvacuation = False
 isWallFollowing = False
 state = FIRST_SILVER_VICTIM
 sentMessage = False
+checkForEntrance = False
+recievedMessage = ""
 
 # Thresholds
-black_threshold = [
-    (0, 11, -11, 1, -4, 7)
-]  # [(0, 20, -10, 10, -10, 10), (1, 6, -15, 12, -13, 16)]
+black_threshold = [(0, 11, -11, 1, -4, 7)]
 green_threshold = [
-    (20, 36, -38, -23, 24, 40)
-#    (0, 20, -23, -10, 5, 26)
-#     (0, 30, -35, -18, 20, 44)
-#    (0, 19, -24, 2, 1, 21),
-#    (12, 36, -48, -21, 24, 37),
-#    (12, 60, -61, -3, 17, 56),
-]  # [(10, 30, -50, 0, 5, 30)]
+                   (10, 44, -33, -18, 16, 34)
+#                   (10, 19, -20, -6, -1, 22)
+#                   (18, 40, -44, -22, 22, 42)
+                   ]
 red_threshold = [
-    (0, 27, 6, 40, 1, 28)
-#    (0, 24, -6, 15, 3, 19)
-#    (19, 43, 9, 47, -2, 27)
-#    (0, 20, -1, 22, 8, 27),
-#    (0, 13, -1, 29, -3, 11),
-]  # [(0, 20, 5, 50, 5, 50), (0, 50, 75, 17, -30, 47)]
-red_line_threshold = [(27, 100, 15, 127, 15, 127), (22, 100, 14, 127, 6, 127)]
+                 (1, 11, 0, 20, 3, 18)
+#                 (0, 26, 7, 41, -8, 17)
+                 ]
+red_line_threshold = [(22, 100, 14, 127, 6, 127)]
 
 # Functions
 def sendMessage(message):
@@ -83,12 +78,14 @@ def sendMessage(message):
     sentMessage = True
 
 def readMessage():
+    global recievedMessage
     if(not uart.any()):
         return ""
     try:
         message = uart.readline()
+        recievedMessage = message.decode("utf-8").strip()
         if message:
-            print("Recieved: ", message)
+            print("Recieved: ", message.decode("utf-8").strip())
             return message.decode("utf-8").strip()
         else:
             return ""
@@ -201,22 +198,25 @@ def searchForRedTriangle():
 
 def searchForRedLine():
     blobs = img.find_blobs(
-        red_line_threshold, merge=True, roi=(20, 200, 200, 40), aree_threshold=500
+        red_line_threshold, merge=True, roi=(20, 200, 320, 40), aree_threshold=500
     )
     if len(blobs):
         uart.write("e")
         print("Saw red line")
 
 def lookForAnyTriagle():
-    red = img.find_blobs(red_threshold)
+    red = img.find_blobs(red_threshold, roi=(0, 80, 320, 160))
     if(len(red)):
         sendMessage(TOGGLE_EVACUATION)
+        l = max(red, key=lambda b: b.rect()[2] * b.rect()[3])
+        img.draw_rectangle(l.rect(), color=(255, 255, 0))
         return
     green = img.find_blobs(green_threshold)
     if(len(green)):
         sendMessage(TOGGLE_EVACUATION)
+        l = max(green, key=lambda b: b.rect()[2] * b.rect()[3])
+        img.draw_rectangle(l.rect(), color=(255, 255, 0))
         return
-    print("NOOOO")
 
 def handleEvacuation():
     global sentMessage
@@ -236,7 +236,6 @@ def handleEvacuation():
             sendMessage(SEARCH)
     sentMessage = False
 
-
 while True:
     if(readMessage() == TOGGLE_EVACUATION):
         print("Switch")
@@ -247,5 +246,8 @@ while True:
         handleEvacuation()
     else:
         img = sensor.snapshot()
-        lookForAnyTriagle()
+        if(recievedMessage == TOGGLE_CHECK_ENTRANCE):
+            checkForEntrance = not checkForEntrance
+        if checkForEntrance:
+            lookForAnyTriagle()
         searchForRedLine()
