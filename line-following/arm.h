@@ -25,8 +25,21 @@ void raiseArm() {
   // arm.write(90);
 }
 
+bool raiseArmToVerifyPick() {
+  arm.write(172);
+  delay(1000);
+  for (byte i = 0; i < 100; i++) {
+    if(!digitalRead(A7)) {
+      raiseArm();
+      return true;
+    }
+  }
+  raiseArm();
+  return false;
+}
+
 void lowerArmToPick() {
-  arm.write(20);
+  arm.write(25);
   delay(2000);
   // arm.write(45);
   // delay(3000);
@@ -44,7 +57,7 @@ void lowerArmToDrop() {
 }
 
 void closeGripper() {
-  gripper.write(110);
+  gripper.write(60);
   delay(2000);
 }
 
@@ -53,17 +66,21 @@ void openGripper() {
   delay(2000);
 }
 
-void pick() {
+bool pick() {
   backward(ROOM_SPEED, 400);
   stop();
   openGripper();
   lowerArmToPick();
-  forward(BASE_SPEED, 1000);
+  forward(100, 1200);
   stop();
   closeGripper();
   backward(BASE_SPEED, 500);
   stop();
+  if(state != 4) {
+    return raiseArmToVerifyPick();
+  }
   raiseArm();
+  return true;
 }
 
 void drop() {
@@ -76,7 +93,7 @@ void drop() {
   lowerArmToDrop();
   openGripper();
   delay(1000);
-backward(ROOM_SPEED, 500);
+  backward(ROOM_SPEED, 500);
   stop();
   raiseArm();
   left180();

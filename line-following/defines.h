@@ -84,8 +84,12 @@ const float weights[11] = { -0.5, -0.5, -0.5, -0.5, -0.5, 0, 0.5, 0.5, 0.5, 0.5,
 extern bool dropped = true;
 extern bool inEvacuation = false;
 extern bool wallFollowing = false;
+extern uint8_t cmessage = 0x53;
+extern uint8_t state = 0;
+extern bool exitedEvacuation = false;
 #define RESET_EVACUATION 0
 #define PICK 0x50               // P (Pick the victim)
+// #define PICK_FAILED 0x70        // p (Picking the victim failed)
 #define DROP 0x44               // D (Drop the victim)
 #define LEFT 0x4C               // L (Turn left while searching for victims)
 #define FORWARD 0x46            // F (Go forward while searching for victims)

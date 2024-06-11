@@ -31,6 +31,7 @@ MIN_CONFIDENCE = 0.8
 # Messages
 TOGGLE_EVACUATION = "t"
 PICK = "P"
+FAILED_PICK = "p"
 DROP = "D"
 LEFT = "l"
 RIGHT = "r"
@@ -52,23 +53,16 @@ RED_TRIANGLE = 5
 img = None
 inEvacuation = False
 isWallFollowing = False
-state = FIRST_SILVER_VICTIM
+state = 0
 sentMessage = False
 checkForEntrance = False
 recievedMessage = ""
 
 # Thresholds
 black_threshold = [(0, 11, -11, 1, -4, 7)]
-green_threshold = [
-                   (10, 44, -33, -18, 16, 34)
-#                   (10, 19, -20, -6, -1, 22)
-#                   (18, 40, -44, -22, 22, 42)
-                   ]
-red_threshold = [
-                 (1, 11, 0, 20, 3, 18)
-#                 (0, 26, 7, 41, -8, 17)
-                 ]
-red_line_threshold = [(22, 100, 14, 127, 6, 127)]
+green_threshold = [(48, 71, -53, -24, 29, 57), (32, 52, -51, -26, 24, 54)]#, (42, 55, -51, -24, 18, 49), (16, 50, -48, -20, 22, 49)]
+red_threshold = [(4, 14, -5, 15, -9, 11)]#(10, 29, 21, 43, -6, 29)]#(9, 22, -1, 17, -9, 13)]
+red_line_threshold = [(16, 39, 3, 32, -8, 22)]#[(25, 54, 15, 61, -11, 35)]#[(22, 100, 14, 127, 6, 127)]
 
 # Functions
 def sendMessage(message):
@@ -98,6 +92,14 @@ def waitForMessage(message):
     while readMessage() != message:
         print("Waiting for: ", message)
 
+def verifyPick():
+    global state
+    m = readMessage()
+    while m != PICK and m != FAILED_PICK:
+        m = readMessage()
+    if(m == PICK):
+        state += 1
+
 def toggleInEvacuation():
     global inEvacuation
     inEvacuation = not inEvacuation
@@ -121,8 +123,12 @@ def goToBall(cx, cy):
     region = getRegion(cx, cy)
     if region == PICK:
         sendMessage(PICK)
-        waitForMessage(PICK)
-        state += 1
+#        verifyPick()
+        if(state == 4):
+            waitForMessage(PICK)
+            state += 1
+        else:
+            verifyPick()
     else:
         sendMessage(region)
 
@@ -198,25 +204,31 @@ def searchForRedTriangle():
 
 def searchForRedLine():
     blobs = img.find_blobs(
-        red_line_threshold, merge=True, roi=(20, 200, 320, 40), aree_threshold=500
+        red_line_threshold, merge=True, roi=(20, 200, 280, 40), area_threshold=500
     )
     if len(blobs):
         uart.write("e")
+        blob = max(blobs, key=lambda b: b.area())
+        img.draw_rectangle(blob.rect(), color=(255,0,0))
         print("Saw red line")
 
 def lookForAnyTriagle():
-    red = img.find_blobs(red_threshold, roi=(0, 80, 320, 160))
+    red = img.find_blobs(red_threshold, roi=(0, 90, 320, 160))
     if(len(red)):
-        sendMessage(TOGGLE_EVACUATION)
-        l = max(red, key=lambda b: b.rect()[2] * b.rect()[3])
-        img.draw_rectangle(l.rect(), color=(255, 255, 0))
-        return
-    green = img.find_blobs(green_threshold)
+        redFiltered = list(filter(lambda b: b.rect()[2] / b.rect()[3] > 1, red))
+        if(len(redFiltered)):
+            sendMessage(TOGGLE_EVACUATION)
+            l = max(red, key=lambda b: b.rect()[2] * b.rect()[3])
+            img.draw_rectangle(l.rect(), color=(255, 0, 0))
+            return
+    green = img.find_blobs(green_threshold, roi=(0, 90, 320, 160))
     if(len(green)):
-        sendMessage(TOGGLE_EVACUATION)
-        l = max(green, key=lambda b: b.rect()[2] * b.rect()[3])
-        img.draw_rectangle(l.rect(), color=(255, 255, 0))
-        return
+        greenFiltered = list(filter(lambda b: b.rect()[2] / b.rect()[3] > 1, green))
+        if(len(greenFiltered)):
+            sendMessage(TOGGLE_EVACUATION)
+            l = max(green, key=lambda b: b.rect()[2] * b.rect()[3])
+            img.draw_rectangle(l.rect(), color=(0, 255, 0))
+            return
 
 def handleEvacuation():
     global sentMessage
@@ -251,3 +263,4 @@ while True:
         if checkForEntrance:
             lookForAnyTriagle()
         searchForRedLine()
+        img.draw_rectangle(20, 200, 280, 40)
