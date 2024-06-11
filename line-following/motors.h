@@ -73,6 +73,15 @@ void rightIntersection() {
   }
 }
 
+void left180() {
+  int initialHeading = getHeading();
+  int deltaHeading = getHeading() - initialHeading;
+  while(abs(deltaHeading) < 225) {
+    left();
+    deltaHeading = getHeading() - initialHeading;
+  }
+}
+
 void deadEnd() {
   int initialHeading = getHeading();
   int deltaHeading = getHeading() - initialHeading;
