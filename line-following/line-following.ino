@@ -8,6 +8,7 @@
 #include "obstacle.h"
 
 bool shouldCheckRed = false;
+long whiteCounter = 0;
 
 void setup() {
   if (DEBUG_MODE) {
@@ -53,7 +54,6 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(THRESHOLD_INCREMENT_INTERRUPT), INCREMENT_THRESHOLD, FALLING);
     attachInterrupt(digitalPinToInterrupt(THRESHOLD_DECREMENT_INTERRUPT), DECREMENT_THRESHOLD, FALLING);
   }
-
   while (!digitalRead(CALIBRATION_PIN)) {
     Serial.println(BLACK_THRESHOLD);
     if (reading(sensorPins[5])) {
@@ -74,8 +74,14 @@ void setup() {
 
 void loop() {
   if (inEvacuation) {
-    // handleEvacuation(SEARCH);
-    handleEvacuation(wallFollowing ? WALL_FOLLOW : readSerial());
+    if (wallFollowing) {
+      handleEvacuation(WALL_FOLLOW);
+    } else {
+      Serial.print("State: ");
+      Serial.print(state);
+      cmessage = readSerial();
+      handleEvacuation(cmessage);
+    }
   } else {
     if (!shouldCheckRed && Serial3.available()) {
       Serial3.readBytes(message, 1);
@@ -88,35 +94,30 @@ void loop() {
     }
     if (_IR0() && _IR1() && _IR2() && _IR3() && _IR4() && _IR6() && _IR7() && _IR8() && _IR9() && _IR10()) {
       handleGreen();
+      whiteCounter = 0;
     } else if (reading(IR5) && (_IR0() + _IR1() + _IR2() + _IR3() + _IR4() > 3 && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
       handleGreen();
+      whiteCounter = 0;
     } else if (reading(IR5) && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && _IR6() + _IR7() + _IR8() + _IR9() + _IR10() > 3)) {
       handleGreen();
+      whiteCounter = 0;
     } else {
       const int8_t position = -_IR0() - _IR1() - _IR2() - _IR3() - _IR4() + _IR6() + _IR7() + _IR8() + _IR9() + _IR10();
-      int16_t leftMotorSpeed = BASE_SPEED + (position * SPEED_CHANGE);
-      int16_t rightMotorSpeed = BASE_SPEED - (position * SPEED_CHANGE);
+      Serial.println(position);
+      int16_t leftMotorSpeed = (shouldCheckRed ? 80 : BASE_SPEED) + (position * SPEED_CHANGE);
+      int16_t rightMotorSpeed = (shouldCheckRed ? 80 : BASE_SPEED) - (position * SPEED_CHANGE);
       drive(leftMotorSpeed, rightMotorSpeed);
       if (position == 0 && (!_IR0() && !_IR1() && !_IR2() && !_IR3() && !_IR4() && !reading(IR5) && !_IR6() && !_IR7() && !_IR8() && !_IR9() && !_IR10())) {
-        if (Serial3.available()) {
-          Serial3.readBytes(message, 1);
-          Serial.println(message);
-          if (message[0] == TOGGLE_EVACUATION) {
-            inEvacuation = true;
-            stop(1000);
-            forward(BASE_SPEED, 2000);
-            stop();
-            Serial3.write(TOGGLE_EVACUATION);
-            chooseBus(0);
-          }
+        if (++whiteCounter == (shouldCheckRed ? 20 : 4000) && !exitedEvacuation) {
+          checkEvacuationEntrance();
+          whiteCounter = 0;
         }
-        // if (inEvacuation) {
-        //   // Serial.println("enter evacuation");
-
-        // }
+        Serial.println(whiteCounter);
         if (shouldCheckRed) {
           checkRed();
         }
+      } else {
+        whiteCounter = 0;
       }
     }
   }
