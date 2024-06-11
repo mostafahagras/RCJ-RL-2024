@@ -67,14 +67,19 @@ void pick() {
 }
 
 void drop() {
-  forward(ROOM_SPEED, 2000);
-  backward(ROOM_SPEED, 750);
+  auto startMillis = millis();
+  while(!(_IR0() || _IR1() || _IR2() || _IR3() || _IR4() || _IR6() || _IR7() || _IR8() || _IR9() || _IR10()) && millis() - startMillis < 2000) {
+    forward(ROOM_SPEED);
+  }
+  backward(ROOM_SPEED, 500);
   stop();
   lowerArmToDrop();
   openGripper();
   delay(1000);
+backward(ROOM_SPEED, 500);
+  stop();
   raiseArm();
-  deadEnd();
+  left180();
 }
 
 #endif
