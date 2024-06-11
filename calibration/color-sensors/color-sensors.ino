@@ -25,8 +25,8 @@ VL53L0X_RangingMeasurementData_t measure2;
 
 Adafruit_TCS34725 tcs[] = {
   Adafruit_TCS34725(),
-  Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS34725_GAIN_1X),
-  Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS34725_GAIN_1X),
+  Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X),
+  Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X),
 };
 
 void setup() {
@@ -108,14 +108,14 @@ void loop() {
   } else {
     Serial.write(BOTH_NONE);
   }
-  // chooseBus(0);
-  // float left = leftTOF();
-  // float front = frontTOF();
-  // Serial.print("\t\t");
-  // Serial.print(left);
-  // Serial.print("\t");
-  // Serial.print(front);
-  // Serial.print("\t");
+  chooseBus(0);
+  float left = leftTOF();
+  float front = frontTOF();
+  Serial.print("\t\t");
+  Serial.print(left);
+  Serial.print("\t");
+  Serial.print(front);
+  Serial.print("\t");
   // Serial.print(digitalRead(2));
   // Serial.print(digitalRead(3));
   // Serial.print(digitalRead(4));
@@ -147,7 +147,6 @@ int readColors(byte sensorNum) {
   float r, g, b;
   // tcs[sensorNum].getRGB(&r, &g, &b);
   tcs[sensorNum].getRGB(&r, &g, &b);
-  Serial.print(sensorNum);
   Serial.print(": ");
   Serial.print(" R: ");
   Serial.print(r);
@@ -160,8 +159,14 @@ int readColors(byte sensorNum) {
   Serial.print("\t");
   // Serial.println();
   if (g - r > 20 && g - b > 20 ) {
+    // Serial.print(sensorNum);
+    // Serial.println("G");
+    // delay(1000);
     return GREEN;
   } else if (r - g > 20 && r - b > 20) {
+    // Serial.print(sensorNum);
+    // Serial.println("R");
+    // delay(1000);
     return RED;
   } else {
     return NONE;
