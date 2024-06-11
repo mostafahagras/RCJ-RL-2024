@@ -1,7 +1,7 @@
 // #define BASE_SPEED 100
 // #define HIGH_SPEED 254
 // #define LOW_SPEED 50
-// #define SPEED_CHANGE 200z
+// #define SPEED_CHANGE 200
 #define P0 53
 #define P1 51
 #define P2 49
@@ -33,18 +33,22 @@ void setup() {
   pinMode(P8, INPUT);
   pinMode(P9, INPUT);
   pinMode(P10, INPUT);
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
   // pinMode(P5, INPUT);
   // pinMode(P6, INPUT);
-  Serial.begin(9600);
+  Serial.begin(115200);
 }
+#define SILVER_1()  ((PIND & _BV(PD2)) ? 0 : 1)  // PD2 corresponds to digital pin 2
+#define SILVER_2()  ((PIND & _BV(PD3)) ? 0 : 1)  // PD3 corresponds to digital pin 3
+#define SILVER_3()  ((PING & _BV(PG5)) ? 0 : 1)
 
 // int reading(int analog) {
 //   return analog ;//> 100 ? 1 : 0;
 // }
 
 void loop() {
-  Serial.print(digitalRead(P0));
-  Serial.print("\t");
   Serial.print(digitalRead(P1));
   Serial.print("\t");
   Serial.print(digitalRead(P2));
@@ -52,6 +56,8 @@ void loop() {
   Serial.print(digitalRead(P3));
   Serial.print("\t");
   Serial.print(digitalRead(P4));
+  Serial.print("\t");
+  Serial.print(digitalRead(P0));
   Serial.print("\t");
   Serial.print("\t");
   Serial.print(analogRead(P5));
@@ -67,7 +73,15 @@ void loop() {
   Serial.print("\t");
   Serial.print(digitalRead(P10));
   // Serial.print("\t\t\t");
-  // Serial.print(digitalRead(P5));
+
+  Serial.print(digitalRead(36));
+  Serial.print(digitalRead(2));
+  Serial.print(digitalRead(3));
+  Serial.print(digitalRead(4));
+  Serial.print(digitalRead(38));
+  // Serial.print(SILVER_1());
+  // Serial.print(SILVER_2());
+  // Serial.print(SILVER_3());
   // Serial.print(digitalRead(LEFT_OBSTACLE));
   // Serial.print("\t");
   // Serial.print(digitalRead(OBSTACLE));
